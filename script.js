@@ -1375,10 +1375,11 @@ function renderWordOfTheDay() {
 
 // --- 🏆 לוח תחרות הניקוד בין הכיתות ---
 
-function getSortedClassStandings(mode) {
+function getSortedClassStandings(mode, gradeFilter = 'all') {
   const activeDayId = getCurrentCompetitionDayId();
 
   return CONFIG.classes
+    .filter((cls) => gradeFilter === 'all' || cls.startsWith(gradeFilter))
     .map((cls) => {
       const entry = state.classScores[cls] || { total: 0, byDay: {} };
       const score = mode === 'today' ? Number(entry.byDay?.[activeDayId]) || 0 : Number(entry.total) || 0;
@@ -1406,7 +1407,11 @@ function renderLeaderboard() {
     weeklyTabBtn.setAttribute('aria-selected', String(state.leaderboardTab === 'weekly'));
   }
 
-  const standings = getSortedClassStandings(state.leaderboardTab);
+  document.querySelectorAll('.grade-filter-btn').forEach((btn) => {
+    btn.classList.toggle('is-active', btn.dataset.grade === state.leaderboardGradeFilter);
+  });
+
+  const standings = getSortedClassStandings(state.leaderboardTab, state.leaderboardGradeFilter);
   const maxScore = Math.max(10, standings[0]?.score || 0);
   const medals = ['🥇', '🥈', '🥉'];
 
@@ -1449,16 +1454,7 @@ function renderLeaderboard() {
 
 function renderModalClassChips() {
   const container = document.getElementById('modal-class-chips');
-  if (!container) return;
-  container.innerHTML = '';
-  CONFIG.classes.forEach((cls) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = `class-chip${state.selectedClass === cls ? ' is-selected' : ''}`;
-    btn.textContent = cls;
-    btn.addEventListener('click', () => selectStudentClass(cls));
-    container.appendChild(btn);
-  });
+  renderGroupedClassChips(container);
 }
 
 function openRiddleModal(riddleId) {
