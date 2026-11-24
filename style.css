@@ -1640,6 +1640,10 @@ input {
   margin-bottom: 1.5rem;
 }
 
+.peak-schedule-panel {
+  margin-bottom: 1.5rem;
+}
+
 .timeline {
   list-style: none;
   margin: 0;
@@ -3009,6 +3013,7 @@ input {
   .section-head--peak,
   #peak-locked-panel,
   .peak-two-col,
+  .peak-schedule-panel,
   .mini-game-panel,
   .certificate-studio__header,
   .cert-form,

@@ -2009,7 +2009,6 @@ function renderPeakDaySection() {
   }
 
   renderScheduleList();
-  renderGamesList();
   if (!state.matchGame.shuffledMeanings.length) {
     resetIdiomMatchGame();
   }
@@ -2033,28 +2032,6 @@ function renderScheduleList() {
       </div>
     `;
     listEl.appendChild(li);
-  });
-}
-
-function renderGamesList() {
-  const listEl = document.getElementById('games-list');
-  if (!listEl) return;
-  listEl.innerHTML = '';
-
-  CONFIG.externalGames.forEach((game) => {
-    const a = document.createElement('a');
-    a.className = 'game-card';
-    a.href = game.url;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    a.innerHTML = `
-      <div class="game-card__info">
-        <h4 class="game-card__title">${game.title}</h4>
-        <p class="game-card__desc">${game.description}</p>
-      </div>
-      <span class="game-card__action">לפתיחה ↗</span>
-    `;
-    listEl.appendChild(a);
   });
 }
 
