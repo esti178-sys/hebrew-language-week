@@ -67,126 +67,334 @@ const CONFIG = {
     '2026-12-24', // יום ז' — יום השיא! חמישי 24.12
   ],
 
-  // --- 8. מערך 6 החידות היומיות (גילאי 10–14, כיתות ה'–ח') ---
+  // --- 8. מערך 6 החידות היומיות של בית ספר הראל (כולל איורי SVG מונפשים מובנים) ---
   riddles: [
     {
       id: 1,
       dayLabel: "יום א'",
-      icon: '🍦',
+      icon: '🌙',
       badgeName: 'מחדש/ת מילים',
-      category: 'חידושי אליעזר בן-יהודה',
-      shortDesc: 'איזו מילה מתוקה במיוחד חידש מחייה השפה העברית?',
-      question:
-        'אליעזר בן-יהודה חידש מאות מילים שאנו אומרים מדי יום. איזו מהמילים הבאות חידש משורש הקשור ל"קרישה" ו"קרח", וגם בהשראת הצליל של המילה האיטלקית Gelato?',
+      category: 'חידת תמונה',
+      shortDesc: 'הסתכלו על האיור — איך האקדמיה ללשון העברית קוראת לפיג\'מה?',
+      question: 'הסתכלו על הבגד שבתמונה: איך האקדמיה ללשון העברית קוראת לפיג\'מה?',
+      svgIllustration: `
+        <svg viewBox="0 0 360 185" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="איור של דמות בפיג'מת פסים וכובע שינה עם סימני Zzz">
+          <!-- רקע לילה עדין -->
+          <rect x="14" y="10" width="332" height="165" rx="22" fill="#EBF5FF" />
+          <circle cx="62" cy="48" r="18" fill="#F5C443" />
+          <circle cx="70" cy="44" r="15" fill="#EBF5FF" />
+          <circle cx="98" cy="36" r="2.6" fill="#0EA5E9" />
+          <circle cx="294" cy="42" r="3" fill="#F5C443" />
+          <circle cx="310" cy="70" r="2.2" fill="#38BDF8" />
+
+          <!-- גוף הדמות בפיג'מת פסים -->
+          <g transform="translate(115, 22)">
+            <!-- צוואר וגוף פיג'מה -->
+            <path d="M22 152 C22 108 38 92 65 92 C92 92 108 108 108 152 Z" fill="#17416C" />
+            <!-- פסים של הפיג'מה -->
+            <path d="M28 118 H102" stroke="#38BDF8" stroke-width="6" stroke-linecap="round" />
+            <path d="M24 134 H106" stroke="#38BDF8" stroke-width="6" stroke-linecap="round" />
+            <path d="M23 148 H107" stroke="#BAE6FD" stroke-width="5" stroke-linecap="round" />
+            <!-- צווארון וכפתורים -->
+            <path d="M47 93 L65 110 L83 93" fill="#FFFFFF" stroke="#0E2A47" stroke-width="2.5" stroke-linejoin="round" />
+            <circle cx="65" cy="118" r="3.2" fill="#F5C443" />
+            <circle cx="65" cy="134" r="3.2" fill="#F5C443" />
+            <!-- כיס קטן -->
+            <rect x="75" y="114" width="16" height="15" rx="4" fill="#0E2A47" stroke="#F5C443" stroke-width="1.8" />
+
+            <!-- ראש ישן וחמוד -->
+            <circle cx="65" cy="66" r="28" fill="#FDE4C8" stroke="#0E2A47" stroke-width="2.5" />
+            <!-- לחיים ורודות -->
+            <ellipse cx="47" cy="72" rx="4.5" ry="2.8" fill="#FDA4AF" opacity="0.7" />
+            <ellipse cx="83" cy="72" rx="4.5" ry="2.8" fill="#FDA4AF" opacity="0.7" />
+            <!-- עיניים עצומות בחיוך -->
+            <path d="M48 64 Q54 70 60 64" stroke="#0E2A47" stroke-width="2.6" stroke-linecap="round" fill="none" />
+            <path d="M70 64 Q76 70 82 64" stroke="#0E2A47" stroke-width="2.6" stroke-linecap="round" fill="none" />
+            <!-- חיוך ישנוני -->
+            <path d="M58 77 Q65 83 72 77" stroke="#0E2A47" stroke-width="2.4" stroke-linecap="round" fill="none" />
+
+            <!-- כובע שינה מפוספס עם פונפון חרדל -->
+            <path d="M36 53 C36 22 72 8 106 24 C90 28 84 40 94 50 Z" fill="#0E2A47" stroke="#0E2A47" stroke-width="2" />
+            <path d="M44 43 Q65 30 90 36" stroke="#38BDF8" stroke-width="4.5" stroke-linecap="round" fill="none" />
+            <path d="M54 31 Q72 22 93 26" stroke="#F5C443" stroke-width="3.5" stroke-linecap="round" fill="none" />
+            <rect x="33" y="46" width="64" height="11" rx="5.5" fill="#FFFFFF" stroke="#0E2A47" stroke-width="2.2" />
+            <circle cx="109" cy="26" r="8" fill="#F5C443" stroke="#0E2A47" stroke-width="2" />
+          </g>
+
+          <!-- סימני Zzz מרחפים באנימציה -->
+          <text x="242" y="76" class="svg-zzz svg-zzz--1" fill="#0284C7" font-family="Heebo, sans-serif" font-size="22" font-weight="900">z</text>
+          <text x="262" y="54" class="svg-zzz svg-zzz--2" fill="#0E2A47" font-family="Heebo, sans-serif" font-size="27" font-weight="900">Z</text>
+          <text x="285" y="34" class="svg-zzz svg-zzz--3" fill="#D49A1A" font-family="Heebo, sans-serif" font-size="19" font-weight="900">z</text>
+        </svg>
+      `,
       emojiClue: '',
-      hint: 'חשבו על מאכל קר ומתוק שאוכלים בגביע או בכוס בימי הקיץ!',
-      options: ['שוקולד', 'גְּלִידָה', 'סוכרייה', 'עוגייה'],
+      hint: 'חשבו על השורש של המילים "נמנום" ו"תנומה" — ובאותו משקל של המילה רַכֶּבֶת!',
+      options: ['שְׁנָתוֹן', 'נַמְנֶמֶת', 'כֻּתֹּנֶת לַיְלָה', 'רְדוּמִית'],
       correctIndex: 1,
       didYouKnow:
-        'המילה "גְּלִידָה" היא אחד החידושים המתוקים והמוצלחים ביותר של אליעזר בן-יהודה! הוא שילב בין השורש העברי ג-ל-ד (שפירושו להיקרש או לקפוא, כמו "גליד קרח") לבין הדמיון בצליל למילה האיטלקית "ג\'לאטו". מילים יומיומיות נוספות שכולנו אומרים בזכותו הן "מילון", "מגבת", "מדרכה" ו"אדיב".',
+        'המילה "נַמְנֶמֶת" נוצרה מהשורש נ.ו.מ (תנומה), בדיוק באותו משקל של המילים רַכֶּבֶת, טַיֶּסֶת וצַמֶּרֶת!',
     },
     {
       id: 2,
       dayLabel: "יום ב'",
-      icon: '🐦',
-      badgeName: 'מפצח/ת פתגמים',
-      category: "ניבים באימוג'ים",
-      shortDesc: 'פענחו את הפתגם העברי המוכר שמסתתר מאחורי הסמלים.',
-      question: "איזה פתגם עברי מוכר מסתתר מאחורי רצף האימוג'ים הבא?",
-      emojiClue: '🐦 ✋  ⚖️  🐦🐦 🌳',
-      hint: 'בצד אחד יש ציפור אחת על היד, ובצד השני שתיים על העץ — מה עדיף?',
-      options: [
-        'ציפור לחשה לי באוזן',
-        'התפוח לא נופל רחוק מהעץ',
-        'טובה ציפור אחת ביד משתיים על העץ',
-        'לעוף על כנפי הדמיון',
-      ],
+      icon: '📺',
+      badgeName: 'שומר/ת הסוד',
+      category: 'עברית של מסכים',
+      shortDesc: 'איך אומרים בעברית תקנית "ספוילר" של סדרה או סרט?',
+      question: 'החבר בסרטון כמעט גילה איך נגמרת הסדרה! איך אומרים בעברית תקנית "ספוילר"?',
+      svgIllustration: `
+        <svg viewBox="0 0 360 185" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="מסך קולנוע מואר ולידו דמות ששמה יד על הפה בהפתעה">
+          <rect x="14" y="10" width="332" height="165" rx="22" fill="#EEF6FF" />
+
+          <!-- מסך טלוויזיה / קולנוע מואר (שמאל) -->
+          <g transform="translate(34, 34)">
+            <!-- הילה מוארת מאחורי המסך -->
+            <rect x="-4" y="-4" width="152" height="98" rx="18" fill="#38BDF8" opacity="0.22" class="svg-screen-glow" />
+            <!-- גוף המסך -->
+            <rect x="0" y="0" width="144" height="90" rx="14" fill="#0E2A47" />
+            <rect x="8" y="8" width="128" height="74" rx="8" fill="#0284C7" class="svg-screen-glow" />
+            <!-- סצנת סיום דרמטית על המסך -->
+            <polygon points="72,20 77,33 91,33 80,41 84,54 72,46 60,54 64,41 53,33 67,33" fill="#F5C443" />
+            <rect x="20" y="64" width="104" height="6" rx="3" fill="rgba(255,255,255,0.3)" />
+            <rect x="20" y="64" width="92" height="6" rx="3" fill="#F5C443" />
+            <circle cx="112" cy="67" r="4.5" fill="#FFFFFF" />
+            <!-- מעמד הטלוויזיה -->
+            <rect x="62" y="90" width="20" height="14" fill="#17416C" />
+            <rect x="44" y="103" width="56" height="8" rx="4" fill="#0E2A47" />
+          </g>
+
+          <!-- דמות מופתעת ששמה יד על הפה (ימין) -->
+          <g transform="translate(215, 24)">
+            <!-- קווי הפתעה מרחפים -->
+            <g class="svg-pop-rays" stroke="#E2A81D" stroke-width="3" stroke-linecap="round">
+              <line x1="12" y1="18" x2="2" y2="10" />
+              <line x1="25" y1="8" x2="22" y2="-2" />
+              <line x1="92" y1="12" x2="102" y2="4" />
+            </g>
+
+            <!-- חולצה -->
+            <path d="M16 148 C16 106 32 94 56 94 C80 94 96 106 96 148 Z" fill="#0EA5E9" stroke="#0E2A47" stroke-width="2.5" />
+            <path d="M40 96 L56 112 L72 96" fill="#FFFFFF" />
+
+            <!-- שיער וראש -->
+            <circle cx="56" cy="60" r="30" fill="#FDE4C8" stroke="#0E2A47" stroke-width="2.5" />
+            <path d="M26 56 C26 30 44 22 60 24 C78 24 88 38 86 55 C76 42 64 38 48 40 C38 41 31 47 26 56 Z" fill="#0E2A47" />
+
+            <!-- עיניים פעורות וגבות מופתעות -->
+            <path d="M38 48 Q45 43 51 47" stroke="#0E2A47" stroke-width="2.4" stroke-linecap="round" fill="none" />
+            <path d="M61 47 Q67 43 74 48" stroke="#0E2A47" stroke-width="2.4" stroke-linecap="round" fill="none" />
+            <circle cx="45" cy="58" r="5.5" fill="#FFFFFF" stroke="#0E2A47" stroke-width="2" />
+            <circle cx="67" cy="58" r="5.5" fill="#FFFFFF" stroke="#0E2A47" stroke-width="2" />
+            <circle cx="44" cy="58" r="2.4" fill="#0E2A47" />
+            <circle cx="66" cy="58" r="2.4" fill="#0E2A47" />
+
+            <!-- יד מונפשת מכסה את הפה בהפתעה -->
+            <g class="svg-gasp-hand">
+              <path d="M32 115 Q36 90 48 80" stroke="#0E2A47" stroke-width="11" stroke-linecap="round" />
+              <path d="M32 115 Q36 90 48 80" stroke="#FDE4C8" stroke-width="6.5" stroke-linecap="round" />
+              <ellipse cx="56" cy="77" rx="13" ry="10.5" fill="#FDE4C8" stroke="#0E2A47" stroke-width="2.4" />
+              <line x1="51" y1="71" x2="51" y2="79" stroke="#0E2A47" stroke-width="1.6" stroke-linecap="round" />
+              <line x1="56" y1="69" x2="56" y2="79" stroke="#0E2A47" stroke-width="1.6" stroke-linecap="round" />
+              <line x1="61" y1="71" x2="61" y2="79" stroke="#0E2A47" stroke-width="1.6" stroke-linecap="round" />
+            </g>
+          </g>
+        </svg>
+      `,
+      emojiClue: '',
+      hint: 'בדיוק כמו המילה Spoil באנגלית (לקלקל) — איזו מילה בנויה מהשורש ק-ל-ק-ל?',
+      options: ['מְגַלֶּה', 'הַרְסָן', 'קַלְקְלָן', 'חַשְׂפָן'],
       correctIndex: 2,
       didYouKnow:
-        'הפתגם "טובה ציפור אחת ביד משתיים על העץ" מלמד אותנו להעריך את מה שכבר נמצא בידינו ובטוח, במקום לוותר עליו למען הבטחה גדולה יותר שאינה מובטחת. ביטויים דומים מאוד קיימים בעשרות שפות בעולם, והרעיון מופיע כבר בכתבים עתיקים מלפני יותר מאלף שנה!',
+        'האקדמיה ללשון העברית ממציאה מילים גם לעולם המסכים: במקום "פודקאסט" אומרים הֶסְכֵּת, ובמקום "בינג\'" אומרים צְפִיַּת בּוּלְמוּס.',
     },
     {
       id: 3,
       dayLabel: "יום ג'",
-      icon: '💬',
-      badgeName: 'שומר/ת התקנית',
-      category: 'עברית תקנית מול סלנג',
-      shortDesc: 'איך מנסחים סלנג יומיומי בעברית עשירה ותקנית?',
+      icon: '🖍️',
+      badgeName: 'צייד/ת המילים',
+      category: 'תפוס את המילה האמיתית',
+      shortDesc: 'שלוש מילים הומצאו הרגע — רק אחת היא מילה תקנית אמיתית!',
       question:
-        'בהפסקה אמר עידו לחבריו: "אל תתבאסו, בפעם הבאה נצליח!" — מהי המקבילה התקנית והמדויקת ביותר בעברית לפועל "להתבאס"?',
+        'שלוש מהמילים הבאות הומצאו הרגע, אבל אחת היא מילה תקנית אמיתית של האקדמיה ללשון. מי היא?',
+      svgIllustration: '',
       emojiClue: '',
-      hint: 'כשמישהו אומר "התבאסתי", האם הוא שמח, מופתע או מאוכזב?',
-      options: [
-        'להתאכזב או להצטער',
-        'להתפלא מאוד',
-        'להזדרז ולמהר',
-        'להתגאות בהצלחה',
-      ],
-      correctIndex: 0,
+      hint: 'זו מילה שמשלבת בין "מדגיש" לבין "צובע" — מכשיר שיש כמעט בכל קלמר!',
+      options: ['שַׁרְבּוּטוֹן', 'מַדְגֵּשׁוֹן', 'צַבְעָנִית', 'מַצְבֵּעַ'],
+      correctIndex: 3,
       didYouKnow:
-        'המילה "באסה" נכנסה לסלנג הישראלי מהערבית המדוברת (במשמעות של צער או מצוקה), וממנה יצרו דוברי העברית פועל שלם בבניין התפעל — "התבאס"! זו דוגמה נהדרת ליכולת של השפה העברית לאמץ מילים ולהלביש אותן על השורשים והבניינים שלנו. בכתיבה רשמית נעדיף לכתוב "התאכזבתי" או "הצטערתי".',
+        'מַצְבֵּעַ הוא השם התקני לטוש מדגיש (מרקר) – שילוב של המילים "מַדְגִּישׁ" ו"צוֹבֵעַ"!',
     },
     {
       id: 4,
       dayLabel: "יום ד'",
-      icon: '🔑',
-      badgeName: 'בלש/ית שורשים',
-      category: 'שורשים ומשקלים',
-      shortDesc: 'גלו את "הקוד הסודי" שמחבר בין מילים בעלות אותו משקל.',
-      question:
-        'הביטו בשלוש המילים הבאות: מַחְשֵׁב, מַפְתֵּחַ, מַסְרֵק. כולן שייכות לאותו משקל (מַקְטֵל). מה המשותף למשמעות שלהן?',
+      icon: '❤️',
+      badgeName: 'פותר/ת המשוואות',
+      category: 'משוואת תמונות',
+      shortDesc: 'חברו שתי תמונות מימין לשמאל וגלו איזו מילה עברית נוצרת!',
+      question: 'חברו את שתי התמונות (רֶגֶשׁ + פַּרְצוּף): איזו מילה חדשה נוצרת?',
+      svgIllustration: `
+        <svg viewBox="0 0 360 170" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="משוואה חזותית מימין לשמאל: לב אדום ועוד פרצוף מחייך שווה סימן שאלה">
+          <rect x="12" y="10" width="336" height="150" rx="22" fill="#F0F9FF" />
+
+          <!-- צד ימין: לב אדום (רֶגֶשׁ) -->
+          <rect x="252" y="34" width="76" height="82" rx="18" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="2" />
+          <g class="svg-heartbeat">
+            <path d="M290 98 C290 98 265 82 265 65 C265 55 273 49 281 49 C286 49 289 52 290 55 C291 52 294 49 299 49 C307 49 315 55 315 65 C315 82 290 98 290 98 Z" fill="#EF4444" stroke="#991B1B" stroke-width="2.2" stroke-linejoin="round" />
+            <path d="M274 62 Q276 56 282 56" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" opacity="0.7" />
+          </g>
+          <text x="290" y="138" text-anchor="middle" fill="#43586F" font-family="Heebo, sans-serif" font-size="13" font-weight="800">רֶגֶשׁ</text>
+
+          <!-- סימן פלוס -->
+          <g stroke="#0E2A47" stroke-width="4.5" stroke-linecap="round">
+            <line x1="234" y1="65" x2="234" y2="85" />
+            <line x1="224" y1="75" x2="244" y2="75" />
+          </g>
+
+          <!-- אמצע: פרצוף מחייך (פַּרְצוּף) -->
+          <rect x="142" y="34" width="76" height="82" rx="18" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="2" />
+          <circle cx="180" cy="75" r="26" fill="#F5C443" stroke="#0E2A47" stroke-width="2.4" />
+          <ellipse cx="166" cy="78" rx="4" ry="2.4" fill="#FB7185" opacity="0.65" />
+          <ellipse cx="194" cy="78" rx="4" ry="2.4" fill="#FB7185" opacity="0.65" />
+          <path d="M168 69 Q172 64 176 69" stroke="#0E2A47" stroke-width="2.6" stroke-linecap="round" fill="none" />
+          <path d="M184 69 Q188 64 192 69" stroke="#0E2A47" stroke-width="2.6" stroke-linecap="round" fill="none" />
+          <path d="M168 81 Q180 93 192 81" stroke="#0E2A47" stroke-width="2.8" stroke-linecap="round" fill="none" />
+          <text x="180" y="138" text-anchor="middle" fill="#43586F" font-family="Heebo, sans-serif" font-size="13" font-weight="800">פַּרְצוּף</text>
+
+          <!-- סימן שווה -->
+          <g stroke="#0E2A47" stroke-width="4.5" stroke-linecap="round">
+            <line x1="114" y1="69" x2="132" y2="69" />
+            <line x1="114" y1="81" x2="132" y2="81" />
+          </g>
+
+          <!-- צד שמאל: סימן שאלה מעוצב -->
+          <g class="svg-q-pulse">
+            <rect x="30" y="34" width="76" height="82" rx="18" fill="#0E2A47" stroke="#F5C443" stroke-width="3" />
+            <circle cx="68" cy="75" r="27" fill="rgba(56, 189, 248, 0.16)" stroke="#F5C443" stroke-width="1.8" stroke-dasharray="4 4" />
+            <text x="68" y="88" text-anchor="middle" fill="#F5C443" font-family="Heebo, sans-serif" font-size="40" font-weight="900">?</text>
+          </g>
+          <text x="68" y="138" text-anchor="middle" fill="#0284C7" font-family="Heebo, sans-serif" font-size="13" font-weight="800">המילה?</text>
+        </svg>
+      `,
       emojiClue: '',
-      hint: 'שאלו את עצמכם: מה עושים עם מחשב, מפתח ומסרק? כולם עוזרים לנו לבצע פעולה!',
-      options: [
-        'כולן שמות של מקומות ומבנים',
-        'כולן מתארות בעלי מקצוע',
-        'כולן שמות של תופעות טבע',
-        'כולן שמות של כלים או מכשירים',
-      ],
-      correctIndex: 3,
+      hint: 'הסתכלו על ההתחלה של המילה "רֶגֶשׁ" — איזו אפשרות בנויה בדיוק ממנה?',
+      options: ['רִגְשׁוֹן', 'חַיְכָן', 'פַּרְצוּפוֹן', 'סִמְלוֹן'],
+      correctIndex: 0,
       didYouKnow:
-        'משקל מַקְטֵל הוא אחד המשקלים השימושיים ביותר בעברית ליצירת שמות של מכשירים וכלים — כמו מַזְלֵג, מַגְהֵץ, מַגְבֵּר, מַחְשֵׁב וּמַסְרֵק! לעומתו, משקל מִקְטָלָה (מִסְפָּרָה, מִרְפָּאָה, מִשְׁתָּלָה) מציין לרוב מקומות, ומשקל קַטֶּלֶת (אַדֶּמֶת, צַהֶבֶת) מציין מחלות. ממש כמו צופן מובנה בשפה!',
+        'המילה "רִגְשׁוֹן" היא החלופה העברית לאימוג\'י (Emoji) – מילה יפנית שפירושה "תמונה" + "אות/תו".',
     },
     {
       id: 5,
       dayLabel: "יום ה'",
-      icon: '🐘',
-      badgeName: 'אמן/ית הניבים',
-      category: "ניבים באימוג'ים",
-      shortDesc: 'אתגר פענוח קצר, ציורי ומפתיע במיוחד.',
-      question: "איזה ניב עברי ציורי מתאר את המעבר שמופיע באימוג'ים הבאים?",
-      emojiClue: '🪰  ➡️  🐘',
-      hint: 'חיה קטנטנה שהופכת לחיה ענקית — איך קוראים לזה כשמגזימים?',
-      options: [
-        'זיכרון של פיל',
-        'לעשות מזבוב פיל',
-        'הפיל שבחדר',
-        'לא להזיז זבוב',
-      ],
+      icon: '🤳',
+      badgeName: 'כוכב/ת הרשת',
+      category: 'פנטומימה של רשת',
+      shortDesc: 'איך האקדמיה ללשון העברית קוראת לצילום עצמי בטלפון (סלפי)?',
+      question: 'צפו בדמות שבסרטון: איך האקדמיה ללשון העברית החליטה לקרוא לצילום עצמי בטלפון (סלפי)?',
+      svgIllustration: `
+        <svg viewBox="0 0 360 185" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="סמארטפון מצלם סלפי עם פרצוף מצחיק ואפקט פלאש מהבהב">
+          <rect x="14" y="10" width="332" height="165" rx="22" fill="#EBF6FF" />
+
+          <!-- נצנוצים עדינים ברקע -->
+          <circle cx="88" cy="54" r="4" fill="#38BDF8" opacity="0.55" />
+          <circle cx="276" cy="128" r="5" fill="#F5C443" opacity="0.65" />
+          <circle cx="72" cy="134" r="3" fill="#0E2A47" opacity="0.25" />
+
+          <!-- סמארטפון מוטה קלות לצילום סלפי -->
+          <g transform="translate(132, 18) rotate(-5 48 75)">
+            <!-- צל עדין -->
+            <rect x="6" y="8" width="96" height="148" rx="18" fill="#0E2A47" opacity="0.14" />
+            <!-- גוף הסמארטפון -->
+            <rect x="0" y="0" width="96" height="148" rx="18" fill="#0E2A47" />
+            <!-- מסך הטלפון -->
+            <rect x="7" y="14" width="82" height="114" rx="10" fill="#BAE6FD" />
+            <!-- חריץ מצלמה קדמית -->
+            <rect x="36" y="5" width="24" height="4" rx="2" fill="#334155" />
+            <circle cx="67" cy="7" r="2.4" fill="#38BDF8" />
+
+            <!-- דמות עם פרצוף מצחיק בתוך המסך -->
+            <path d="M16 128 C18 102 32 95 48 95 C64 95 78 102 80 128 Z" fill="#17416C" />
+            <circle cx="48" cy="68" r="24" fill="#FDE4C8" stroke="#0E2A47" stroke-width="2.2" />
+            <!-- בלורית שמחה -->
+            <path d="M25 62 C26 42 42 36 55 40 C66 42 73 50 72 62 C64 52 54 49 42 51 C34 52 29 56 25 62 Z" fill="#0E2A47" />
+            <!-- עין אחת קורצת ועין אחת פקוחה -->
+            <circle cx="39" cy="66" r="4" fill="#0E2A47" />
+            <circle cx="40.5" cy="64.5" r="1.4" fill="#FFFFFF" />
+            <path d="M53 66 Q58 61 63 66" stroke="#0E2A47" stroke-width="2.6" stroke-linecap="round" fill="none" />
+            <!-- פה מחייך עם לשון מצחיקה החוצה -->
+            <path d="M38 77 Q48 85 58 77" stroke="#0E2A47" stroke-width="2.4" stroke-linecap="round" fill="#0E2A47" />
+            <path d="M44 80 Q48 92 53 80 Z" fill="#FB7185" stroke="#0E2A47" stroke-width="1.6" />
+            <!-- מסגרת פוקוס מצלמה -->
+            <path d="M15 24 V20 H19 M81 24 V20 H77 M15 114 V118 H19 M81 114 V118 H77" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" />
+
+            <!-- כפתור צילום בתחתית -->
+            <circle cx="48" cy="138" r="6" fill="#FFFFFF" />
+            <circle cx="48" cy="138" r="3.6" fill="#F5C443" />
+          </g>
+
+          <!-- אפקט פלאש מהבהב ב-CSS ליד העדשה -->
+          <g class="svg-selfie-flash" transform="translate(216, 38)">
+            <circle cx="0" cy="0" r="24" fill="#FEF08A" opacity="0.55" />
+            <polygon points="0,-24 5,-6 24,0 5,6 0,24 -5,6 -24,0 -5,-6" fill="#F5C443" stroke="#FFFFFF" stroke-width="1.8" />
+            <circle cx="0" cy="0" r="6" fill="#FFFFFF" />
+          </g>
+        </svg>
+      `,
+      emojiClue: '',
+      hint: 'המילה נגזרה מהמילה העתיקה "צֶלֶם" (דמות) וגם קשורה למילה "צילום"!',
+      options: ['עַצְמוֹן', 'צַלְמִית', 'פַּרְצוּפוֹן', 'שִׁקּוּפִית'],
       correctIndex: 1,
       didYouKnow:
-        'הביטוי "לעשות מזבוב פיל" מתאר הגזמה קיצונית — הפיכת עניין קטנטן לסיפור ענק ודרמטי. מקור הביטוי עתיק במיוחד: הוא מופיע כבר בכתביו של הסופר היווני-רומי לוקיאנוס במאה השנייה לספירה, נדד לשפות אירופה והשתרש היטב גם בעברית שלנו.',
+        'המילה "צַלְמִית" נגזרה מהמילה העתיקה "צֶלֶם" (דמות), והיא משמשת בעברית גם לתיאור אייקון במחשב או בטלפון!',
     },
     {
       id: 6,
       dayLabel: "יום ו'",
-      icon: '👟',
-      badgeName: 'אלוף/ת הניסוח',
-      category: 'עברית תקנית',
-      shortDesc: 'חידת ההכנה האחרונה לפני יום השיא — בדקו את פעלי הלבוש!',
-      question:
-        'אתם מתארגנים בבוקר לקראת חגיגת יום השיא בבית הספר. איזה מהמשפטים הבאים כתוב בעברית תקנית לחלוטין?',
+      icon: '☁️',
+      badgeName: 'בלש/ית השפה',
+      category: 'בלשי השפה',
+      shortDesc: 'הסתכלו היטב על האיור — איזה ביטוי עברי מוכר מסתתר בו?',
+      question: 'הסתכלו היטב על האיור: איזה ביטוי עברי מוכר מסתתר בתמונה?',
+      svgIllustration: `
+        <svg viewBox="0 0 360 185" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="איור של דמות שהראש שלה נמצא ממש בתוך ענן לבן ורך">
+          <!-- רקע שמיים רכים -->
+          <rect x="14" y="10" width="332" height="165" rx="22" fill="#E0F2FE" />
+          <circle cx="72" cy="48" r="3" fill="#F5C443" />
+          <circle cx="294" cy="44" r="3.5" fill="#F5C443" />
+          <circle cx="272" cy="116" r="2.5" fill="#0EA5E9" />
+          <circle cx="90" cy="126" r="2.5" fill="#0EA5E9" />
+
+          <!-- גוף הדמות שעומדת רגועה -->
+          <g transform="translate(132, 96)">
+            <!-- סוודר כחול עמוק עם פס חרדל -->
+            <path d="M8 78 C8 32 24 14 48 14 C72 14 88 32 88 78 Z" fill="#0E2A47" />
+            <path d="M13 44 H83" stroke="#F5C443" stroke-width="8" stroke-linecap="round" />
+            <path d="M10 58 H86" stroke="#38BDF8" stroke-width="4.5" stroke-linecap="round" />
+            <!-- צווארון וצוואר שנכנס ישר לתוך הענן -->
+            <rect x="39" y="-8" width="18" height="26" rx="7" fill="#FDE4C8" stroke="#0E2A47" stroke-width="2.2" />
+            <path d="M34 15 Q48 25 62 15" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" fill="none" />
+          </g>
+
+          <!-- ענן לבן גדול ורך שעוטף לגמרי את הראש של הדמות -->
+          <g class="svg-cloud-drift">
+            <!-- צל רך תחתון לענן -->
+            <path d="M126 100 H238 C254 100 264 89 264 76 C264 63 254 53 240 52 C236 33 218 20 196 20 C179 20 164 29 157 42 C152 39 146 38 139 38 C122 38 109 50 109 66 C100 70 96 78 96 86 C96 95 107 100 126 100 Z" fill="#BAE6FD" transform="translate(0, 5)" />
+            <!-- גוף הענן הלבן -->
+            <path d="M126 98 H238 C254 98 264 87 264 74 C264 61 254 51 240 50 C236 31 218 18 196 18 C179 18 164 27 157 40 C152 37 146 36 139 36 C122 36 109 48 109 64 C100 68 96 76 96 84 C96 93 107 98 126 98 Z" fill="#FFFFFF" stroke="#0EA5E9" stroke-width="2.2" stroke-linejoin="round" />
+            <!-- קווי רכות עדינים בתוך הענן -->
+            <path d="M142 54 Q152 46 164 52" stroke="#E0F2FE" stroke-width="3" stroke-linecap="round" fill="none" />
+            <path d="M210 42 Q222 38 229 48" stroke="#E0F2FE" stroke-width="3" stroke-linecap="round" fill="none" />
+            <!-- נצנוצי חלום קטנים סביב הענן -->
+            <polygon points="104,34 106,40 112,42 106,44 104,50 102,44 96,42 102,40" fill="#F5C443" />
+            <polygon points="266,28 267.5,33 272.5,34.5 267.5,36 266,41 264.5,36 259.5,34.5 264.5,33" fill="#0EA5E9" />
+          </g>
+        </svg>
+      `,
       emojiClue: '',
-      hint: 'זכרו: חולצה לובשים, נעליים נועלים, ומה עושים עם גרביים? (מתחיל באות ג\'!)',
-      options: [
-        'לבשתי חולצה חגיגית, לבשתי גרביים ושמתי נעליים.',
-        'ענדתי חולצה חגיגית, חבשתי גרביים ונעלתי נעליים.',
-        'לבשתי חולצה חגיגית, גרבתי גרביים ונעלתי נעליים.',
-        'שמתי חולצה חגיגית, נעלתי גרביים ולבשתי נעליים.',
-      ],
+      hint: 'איפה בדיוק נמצא הראש של הדמות באיור? אמרו את המשפט בקול רם!',
+      options: ['רֹאשׁ בְּרֹאשׁ', 'עָנָן שֶׁל כָּבוֹד', 'הָרֹאשׁ שֶׁלּוֹ בָּעֲנָנִים', 'מְרַחֵף בֶּחָלָל'],
       correctIndex: 2,
       didYouKnow:
-        'השפה העברית מתהדרת במגוון עשיר ומדויק של פעלי לבוש! חולצה ומכנסיים לובשים, גרביים גורבים, נעליים נועלים, כובע חובשים, שעון או צמיד עונדים, צעיף כורכים, ומשקפיים מרכיבים. כשאנו משתמשים בפועל המדויק — העברית שלנו נשמעת חדה, עשירה וחיה יותר.',
+        'כשמישהו חולם בהקיץ או לא מרוכז אומרים ש"הראש שלו בעננים" – אבל בעברית תקנית יש מילה אחת למי שנמצא במצב הזה: מְרֻחָף או חוֹלְמָנִי.',
     },
   ],
 
@@ -1495,10 +1703,22 @@ function openRiddleModal(riddleId) {
   const solvedEntry = state.solvedMeta[riddle.id];
   const alreadySolved = Boolean(solvedEntry);
 
+  const illustrationEl = document.getElementById('modal-illustration');
+
   if (iconEl) iconEl.textContent = riddle.icon;
   dayLabel.textContent = riddle.dayLabel;
   categoryLabel.textContent = riddle.category;
   titleEl.textContent = riddle.question;
+
+  if (illustrationEl) {
+    if (riddle.svgIllustration && riddle.svgIllustration.trim()) {
+      illustrationEl.innerHTML = riddle.svgIllustration;
+      illustrationEl.hidden = false;
+    } else {
+      illustrationEl.innerHTML = '';
+      illustrationEl.hidden = true;
+    }
+  }
 
   if (riddle.emojiClue) {
     emojiEl.textContent = riddle.emojiClue;

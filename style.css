@@ -2705,6 +2705,194 @@ input {
 }
 
 /* ==========================================================================
+   איורי SVG מונפשים בתוך מודאל החידה היומית
+   ========================================================================== */
+.modal-illustration {
+  background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);
+  border: 1.5px solid var(--sky-200);
+  border-radius: 18px;
+  padding: 0.65rem 0.75rem;
+  margin-bottom: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.modal-illustration svg {
+  width: 100%;
+  max-width: 340px;
+  height: auto;
+  max-height: 178px;
+  display: block;
+}
+
+/* יום 1: סימני Zzz מרחפים בעדינות */
+.svg-zzz {
+  animation: floatZzz 2.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.svg-zzz--2 {
+  animation-delay: 0.55s;
+}
+.svg-zzz--3 {
+  animation-delay: 1.1s;
+}
+
+/* יום 2: הבהוב מסך עדין ויד מופתעת על הפה */
+.svg-screen-glow {
+  animation: screenGlow 2.4s ease-in-out infinite;
+}
+.svg-gasp-hand {
+  animation: gaspPop 2.2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: bottom center;
+}
+.svg-pop-rays {
+  animation: popRays 2.2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* יום 4: פעימת לב עדינה וסימן שאלה חי */
+.svg-heartbeat {
+  animation: heartBeat 1.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.svg-q-pulse {
+  animation: qPulse 2.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* יום 5: פלאש מהבהב של מצלמת הסלפי */
+.svg-selfie-flash {
+  animation: selfieFlash 2.3s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* יום 6: ענן רך מרחף בעדינות */
+.svg-cloud-drift {
+  animation: cloudDrift 3.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes floatZzz {
+  0%,
+  100% {
+    transform: translateY(4px) scale(0.92);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-7px) scale(1.06);
+    opacity: 1;
+  }
+}
+
+@keyframes screenGlow {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes gaspPop {
+  0%,
+  100% {
+    transform: translateY(2px);
+  }
+  40%,
+  65% {
+    transform: translateY(-3px) rotate(-3deg);
+  }
+}
+
+@keyframes popRays {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes heartBeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.09);
+  }
+  45% {
+    transform: scale(1);
+  }
+  65% {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes qPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes selfieFlash {
+  0%,
+  55%,
+  100% {
+    opacity: 0.12;
+    transform: scale(0.65) rotate(0deg);
+  }
+  68% {
+    opacity: 1;
+    transform: scale(1.22) rotate(12deg);
+  }
+  82% {
+    opacity: 0.25;
+    transform: scale(0.85) rotate(6deg);
+  }
+}
+
+@keyframes cloudDrift {
+  0%,
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    transform: translateX(4px) translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .svg-zzz,
+  .svg-screen-glow,
+  .svg-gasp-hand,
+  .svg-pop-rays,
+  .svg-heartbeat,
+  .svg-q-pulse,
+  .svg-selfie-flash,
+  .svg-cloud-drift {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
    רספונסיביות מלאה למובייל וטאבלט
    ========================================================================== */
 @media (max-width: 980px) {
