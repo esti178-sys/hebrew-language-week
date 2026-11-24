@@ -3,62 +3,196 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>שבוע השפה העברית | אתגר החידות ויום השיא (כיתות ה'–ח')</title>
+  <title>שבוע השפה העברית | מסע החידות ותחרות הכיתות (כיתות ה'–ח')</title>
   <meta
     name="description"
-    content="אפליקציית שבוע השפה העברית בבית הספר לכיתות ה'–ח': מפת התקדמות ל-7 ימים, חידות יומיות, ספירה לאחור, לו&quot;ז יום השיא ומחולל תעודת אלוף/ת העברית."
+    content="אפליקציית שבוע השפה העברית בבית הספר לכיתות ה'–ח': מפת מסע ל-7 ימים, תחרות ניקוד בין הכיתות, חידות יומיות עם רמזים ותגי הישגים, מילת היום, יום השיא ומחולל תעודת אלוף/ת העברית."
   />
   <link
     rel="icon"
     type="image/svg+xml"
-    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230e2a47'/%3E%3Ccircle cx='32' cy='32' r='23' fill='none' stroke='%23f2c14e' stroke-width='2.5'/%3E%3Ctext x='32' y='43' text-anchor='middle' fill='%23ffffff' font-family='serif' font-size='34' font-weight='bold'%3E%D7%A2%3C/text%3E%3C/svg%3E"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230e2a47'/%3E%3Ccircle cx='32' cy='32' r='23' fill='none' stroke='%23f5c443' stroke-width='2.8'/%3E%3Ctext x='32' y='43' text-anchor='middle' fill='%23ffffff' font-family='serif' font-size='34' font-weight='bold'%3E%D7%A2%3C/text%3E%3C/svg%3E"
   />
 
   <!-- Google Fonts: Heebo, Assistant & Frank Ruhl Libre -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700&family=Frank+Ruhl+Libre:wght@700;900&family=Heebo:wght@400;500;600;700;800;900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Frank+Ruhl+Libre:wght@700;900&family=Heebo:wght@400;500;600;700;800;900&display=swap"
     rel="stylesheet"
   />
 
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- סרגל חיווי למצב בדיקה למורה (מוסתר כברירת מחדל) -->
+  <!-- קנבס קונפטי לחגיגת פתרון נכון -->
+  <canvas id="confetti-canvas" class="confetti-canvas" aria-hidden="true"></canvas>
+
+  <!-- סרגל מצב בדיקה למורה (מוסתר כברירת מחדל) -->
   <div id="teacher-banner" class="teacher-banner" hidden role="status" aria-live="polite">
     <div class="container teacher-banner__inner">
       <div class="teacher-banner__text">
         <span class="teacher-banner__badge">מצב בדיקה למורה</span>
-        <span>כל 7 הימים ומתחם יום השיא פתוחים זמנית לבדיקה.</span>
+        <span>כל 7 הימים פתוחים + לוח דוחות ניקוד למורה זמין כעת.</span>
       </div>
       <div class="teacher-banner__actions">
+        <button type="button" id="banner-report-btn" class="btn btn--sky-light btn--sm">
+          📊 דוח ניקוד כיתות
+        </button>
+        <button type="button" id="banner-demo-btn" class="btn btn--ghost-light btn--sm">
+          הוספת ניקוד דמה
+        </button>
         <button type="button" id="banner-reset-btn" class="btn btn--ghost-light btn--sm">
           איפוס התקדמות
         </button>
         <button type="button" id="banner-exit-btn" class="btn btn--mustard btn--sm">
-          יציאה ממצב בדיקה
+          יציאה
         </button>
       </div>
     </div>
   </div>
 
-  <!-- כותרת עליונה וטיימר ספירה לאחור -->
+  <!-- לוח בקרה ודוח ניקוד למורה (נפתח מתוך מצב בדיקה למורה) -->
+  <section id="teacher-report-drawer" class="teacher-report" hidden aria-labelledby="teacher-report-title">
+    <div class="container">
+      <div class="teacher-report__card">
+        <div class="teacher-report__head">
+          <div>
+            <h2 id="teacher-report-title" class="teacher-report__title">📊 דוח ניקוד אוטומטי לפי כיתות וימים</h2>
+            <p class="teacher-report__sub" id="teacher-sync-status">
+              מצב סנכרון: מקומי (לחיבור ענן ודוח מייל יומי אוטומטי ראו קובץ TEACHER_CLOUD_SETUP.md)
+            </p>
+          </div>
+          <div class="teacher-report__btns">
+            <button type="button" id="export-csv-btn" class="btn btn--primary btn--sm">
+              ⬇️ הורדת דוח ל-Excel (CSV)
+            </button>
+            <button type="button" id="copy-daily-summary-btn" class="btn btn--secondary btn--sm">
+              📋 העתקת סיכום יומי למייל/וואטסאפ
+            </button>
+            <button type="button" id="close-report-btn" class="btn btn--secondary btn--sm">
+              סגירה
+            </button>
+          </div>
+        </div>
+
+        <div class="teacher-table-wrap">
+          <table class="teacher-table" id="teacher-report-table">
+            <thead>
+              <tr>
+                <th>כיתה</th>
+                <th>יום א'</th>
+                <th>יום ב'</th>
+                <th>יום ג'</th>
+                <th>יום ד'</th>
+                <th>יום ה'</th>
+                <th>יום ו'</th>
+                <th>סה"כ נקודות</th>
+              </tr>
+            </thead>
+            <tbody id="teacher-report-tbody">
+              <!-- יאוכלס דינמית על ידי script.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- כותרת עליונה שמחה וידידותית עם דמות מלווה + בחירת כיתה + טיימר -->
   <header class="hero">
     <div class="hero__decor" aria-hidden="true">
       <span class="hero__letter hero__letter--1">א</span>
       <span class="hero__letter hero__letter--2">ע</span>
       <span class="hero__letter hero__letter--3">ש</span>
+      <span class="hero__bubble hero__bubble--1"></span>
+      <span class="hero__bubble hero__bubble--2"></span>
+    </div>
+
+    <div class="container hero__top-bar">
+      <p class="hero__eyebrow" id="school-eyebrow">חגיגת השפה העברית · כיתות ה'–ח'</p>
+      <button
+        type="button"
+        id="sound-toggle-btn"
+        class="sound-toggle"
+        aria-pressed="true"
+        title="הפעלת או השתקת צלילי ניצחון"
+      >
+        <span id="sound-toggle-icon" aria-hidden="true">🔊</span>
+        <span id="sound-toggle-label">צלילים פעילים</span>
+      </button>
     </div>
 
     <div class="container hero__inner">
       <div class="hero__content">
-        <p class="hero__eyebrow" id="school-eyebrow">חגיגת השפה והתרבות · כיתות ה'–ח'</p>
+        <!-- דמות מלווה חמודה ("חכמון הינשוף העברי") + בועת דיבור -->
+        <div class="mascot-row">
+          <div class="mascot-avatar" aria-hidden="true">
+            <svg viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- גוף הינשוף -->
+              <ellipse cx="55" cy="64" rx="34" ry="36" fill="#2563A6" />
+              <!-- בטן בהירה -->
+              <ellipse cx="55" cy="73" rx="22" ry="23" fill="#E0F2FE" />
+              <!-- אוזניים / נוצות -->
+              <path d="M27 36 L22 18 L40 28 Z" fill="#1B4D85" />
+              <path d="M83 36 L88 18 L70 28 Z" fill="#1B4D85" />
+              <!-- צעיף חרדל -->
+              <path d="M27 80 Q55 92 83 80 Q80 91 55 95 Q30 91 27 80 Z" fill="#F5C443" />
+              <path d="M67 86 L74 102 L63 100 L60 88 Z" fill="#E2A81D" />
+              <!-- עיניים ומשקפיים -->
+              <circle cx="42" cy="52" r="13" fill="#FFFFFF" stroke="#0E2A47" stroke-width="3" />
+              <circle cx="68" cy="52" r="13" fill="#FFFFFF" stroke="#0E2A47" stroke-width="3" />
+              <line x1="55" y1="52" x2="55" y2="52" stroke="#0E2A47" stroke-width="3" />
+              <path d="M53 51 Q55 49 57 51" stroke="#0E2A47" stroke-width="3" stroke-linecap="round" />
+              <!-- אישונים שמחים -->
+              <circle cx="44" cy="52" r="5" fill="#0E2A47" />
+              <circle cx="66" cy="52" r="5" fill="#0E2A47" />
+              <circle cx="46" cy="49.5" r="1.8" fill="#FFFFFF" />
+              <circle cx="68" cy="49.5" r="1.8" fill="#FFFFFF" />
+              <!-- מקור חרדל -->
+              <path d="M50 61 L60 61 L55 70 Z" fill="#F5C443" stroke="#C88E12" stroke-width="1.5" stroke-linejoin="round" />
+              <!-- ספר קטן עם האות ע -->
+              <rect x="37" y="75" width="36" height="22" rx="4" fill="#FFFFFF" stroke="#0E2A47" stroke-width="2" />
+              <line x1="55" y1="75" x2="55" y2="97" stroke="#CBD5E1" stroke-width="1.5" />
+              <text x="46" y="90" text-anchor="middle" fill="#0E2A47" font-family="Heebo, sans-serif" font-size="11" font-weight="800">א</text>
+              <text x="64" y="90" text-anchor="middle" fill="#0284C7" font-family="Heebo, sans-serif" font-size="11" font-weight="800">ע</text>
+            </svg>
+          </div>
+          <div class="mascot-bubble" id="mascot-bubble">
+            <strong>היי, אני חכמון! 🦉</strong>
+            <span id="mascot-speech">בחרו את הכיתה שלכם, פתרו את חידת היום וצברו נקודות לאליפות!</span>
+          </div>
+        </div>
+
         <h1 class="hero__title">שבוע השפה העברית</h1>
         <p class="hero__subtitle">
-          שישה ימים של חידות מרתקות, חידושי לשון, ניבים ושורשים — בדרך אל
-          <strong>יום השיא החגיגי</strong> ותעודת אלוף/ת העברית שלכם.
+          מסע של 6 חידות יומיות, תגי הישגים, תחרות נקודות בין הכיתות — בדרך אל
+          <strong>יום השיא החגיגי</strong> ותעודת אלוף/ת העברית!
         </p>
+
+        <!-- בוחר כיתה לתחרות הכיתות -->
+        <div class="class-picker-card" id="class-picker-card" aria-label="בחירת כיתה לתחרות">
+          <div class="class-picker-card__head">
+            <span class="class-picker-card__title" id="class-picker-title">
+              🏫 באיזו כיתה אתם? בחרו כדי לצבור נקודות לתחרות הכיתות:
+            </span>
+            <button type="button" id="change-class-btn" class="class-picker-card__change" hidden>
+              החלפת כיתה
+            </button>
+          </div>
+
+          <div class="class-chips" id="hero-class-chips" role="group" aria-label="רשימת כיתות">
+            <!-- יאוכלס דינמית על ידי script.js -->
+          </div>
+
+          <div class="class-selected-bar" id="class-selected-bar" hidden>
+            <div class="class-selected-bar__info">
+              <span class="class-selected-bar__badge" id="selected-class-badge">כיתה ו'2</span>
+              <span id="selected-class-points-text">צברת עד כה 0 נקודות לכיתה!</span>
+            </div>
+            <a href="#leaderboard-section" class="class-selected-bar__link">ללוח התוצאות ↓</a>
+          </div>
+        </div>
 
         <!-- מד התקדמות אישי -->
         <div class="progress-summary" aria-label="התקדמות אישית בחידות">
@@ -75,11 +209,7 @@
       <!-- כרטיס ספירה לאחור ליום השיא -->
       <aside class="countdown-card" aria-label="ספירה לאחור ליום השיא">
         <div class="countdown-card__header">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <circle cx="12" cy="13" r="8"></circle>
-            <path d="M12 9v4l2.5 2.5"></path>
-            <path d="M9 2h6"></path>
-          </svg>
+          <span class="countdown-card__emoji" aria-hidden="true">🎉</span>
           <span id="countdown-heading">הספירה לאחור ליום השיא</span>
         </div>
 
@@ -103,25 +233,32 @@
         </div>
 
         <div id="countdown-live-msg" class="countdown-live" hidden>
-          <p class="countdown-live__title">היום הוא יום השיא!</p>
-          <p class="countdown-live__sub">הלו"ז, המשחקים ומחולל התעודה מחכים לכם למטה.</p>
+          <p class="countdown-live__title">היום הוא יום השיא! 🎊</p>
+          <p class="countdown-live__sub">הלו"ז, משחק הניבים ומחולל התעודה מחכים לכם למטה.</p>
           <a href="#peak-day-section" class="btn btn--mustard btn--sm">למתחם יום השיא</a>
         </div>
 
         <p class="countdown-card__date" id="peak-date-display"></p>
       </aside>
     </div>
+
+    <!-- גל הפרדה רך ומזמין לתחילת העמוד -->
+    <div class="hero__wave" aria-hidden="true">
+      <svg viewBox="0 0 1440 70" preserveAspectRatio="none">
+        <path d="M0,28 C360,74 1080,-10 1440,36 L1440,70 L0,70 Z" fill="#f3f8ff"></path>
+      </svg>
+    </div>
   </header>
 
   <main class="main-content">
-    <!-- מקטע 1: מפת ההתקדמות ל-7 ימים -->
+    <!-- מקטע 1: מפת המסע של 7 הימים (סגנון לוח משחק) -->
     <section class="section" id="roadmap-section" aria-labelledby="roadmap-title">
       <div class="container">
         <div class="section-head">
           <div>
-            <h2 class="section-head__title" id="roadmap-title">מפת 7 ימי השפה העברית</h2>
+            <h2 class="section-head__title" id="roadmap-title">🗺️ מפת המסע — 7 ימי השפה העברית</h2>
             <p class="section-head__desc">
-              בכל יום נפתחת חידה חדשה. פתרו את החידות, גלו עובדות מפתיעות וצברו נקודות לקראת יום השיא.
+              בכל יום נפתחת תחנה חדשה! פתרו נכון כדי לזכות ב-<strong>10 נקודות לכיתה</strong> (+2 נקודות בונוס לפתרון בניסיון ראשון) ולאסוף מדבקת הישג.
             </p>
           </div>
           <div class="legend" aria-label="מקרא מצבי הימים">
@@ -137,30 +274,129 @@
       </div>
     </section>
 
-    <!-- מקטע 2: מתחם יום השיא (יום ז') -->
+    <!-- מקטע 2: מדף תגי ההישגים + כרטיסיית "מילת היום" מתהפכת -->
+    <section class="section section--compact" id="extras-section" aria-label="תגי הישגים ומילת היום">
+      <div class="container extras-grid">
+        <!-- מדף מדבקות ותגי הישגים -->
+        <div class="panel panel--playful">
+          <div class="panel__head">
+            <span class="panel__emoji" aria-hidden="true">🏅</span>
+            <div>
+              <h2 class="panel__title">מדף תגי ההישגים שלך</h2>
+              <p class="panel__sub" id="badges-summary-text">פתרו חידות יומיות כדי לפתוח את כל 6 המדבקות!</p>
+            </div>
+          </div>
+          <div class="badges-grid" id="badges-grid">
+            <!-- יאוכלס דינמית על ידי script.js -->
+          </div>
+        </div>
+
+        <!-- כרטיסיית "מילת היום" מתהפכת (Flip Card) -->
+        <div class="panel panel--playful word-panel">
+          <div class="panel__head panel__head--between">
+            <div class="panel__head-group">
+              <span class="panel__emoji" aria-hidden="true">✨</span>
+              <div>
+                <h2 class="panel__title">מילת היום של האקדמיה</h2>
+                <p class="panel__sub">לחצו על הכרטיסייה כדי להפוך ולגלות מה פירושה!</p>
+              </div>
+            </div>
+            <div class="word-nav">
+              <button type="button" id="word-prev-btn" class="word-nav__btn" aria-label="המילה הקודמת">→</button>
+              <span class="word-nav__count" id="word-index-label">1 / 6</span>
+              <button type="button" id="word-next-btn" class="word-nav__btn" aria-label="המילה הבאה">←</button>
+            </div>
+          </div>
+
+          <button type="button" class="flip-card" id="word-flip-card" aria-pressed="false">
+            <div class="flip-card__inner">
+              <div class="flip-card__face flip-card__front">
+                <span class="flip-card__tag">מנחשים מה זה?</span>
+                <span class="flip-card__word" id="word-front-text">הֶסְכֵּת</span>
+                <span class="flip-card__cta">👆 לחצו כדי להפוך את הכרטיסייה</span>
+              </div>
+              <div class="flip-card__face flip-card__back">
+                <span class="flip-card__tag flip-card__tag--back">המשמעות המפתיעה:</span>
+                <strong class="flip-card__meaning" id="word-back-meaning">פודקאסט</strong>
+                <p class="flip-card__example" id="word-back-example"></p>
+                <span class="flip-card__cta flip-card__cta--back">לחצו שוב לחזרה</span>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- מקטע 3: 🏆 לוח תחרות הניקוד בין הכיתות -->
+    <section class="section" id="leaderboard-section" aria-labelledby="leaderboard-title">
+      <div class="container">
+        <div class="leaderboard-card">
+          <div class="leaderboard-card__head">
+            <div>
+              <span class="peak-kicker">🏆 תחרות בית־ספרית</span>
+              <h2 class="section-head__title" id="leaderboard-title">אליפות הכיתות בשפה העברית</h2>
+              <p class="section-head__desc">
+                כל חידה שתפתרו מוסיפה נקודות אוטומטית לכיתה שלכם! איזו כיתה תכבוש את הפסגה היום ובסיכום השבועי?
+              </p>
+            </div>
+
+            <div class="leaderboard-controls">
+              <div class="tab-switch" role="tablist" aria-label="תצוגת לוח הניקוד">
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-today-scores"
+                  class="tab-switch__btn is-active"
+                  aria-selected="true"
+                >
+                  ניקוד היום
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-weekly-scores"
+                  class="tab-switch__btn"
+                  aria-selected="false"
+                >
+                  מצטבר שבועי
+                </button>
+              </div>
+              <span class="sync-pill" id="leaderboard-sync-pill">מצב תצוגה מקומי</span>
+            </div>
+          </div>
+
+          <!-- פודיום 3 המקומות הראשונים -->
+          <div class="podium-grid" id="podium-grid">
+            <!-- יאוכלס דינמית על ידי script.js -->
+          </div>
+
+          <!-- טבלת כל הכיתות -->
+          <div class="rankings-list" id="rankings-list">
+            <!-- יאוכלס דינמית על ידי script.js -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- מקטע 4: מתחם יום השיא (יום ז') -->
     <section class="section section--peak" id="peak-day-section" aria-labelledby="peak-title">
       <div class="container">
         <div class="section-head section-head--peak">
           <div>
-            <span class="peak-kicker">יום ז' · האירוע המסכם</span>
+            <span class="peak-kicker">🎉 יום ז' · האירוע המסכם</span>
             <h2 class="section-head__title" id="peak-title">מתחם יום השיא</h2>
             <p class="section-head__desc" id="peak-subtitle">
-              לו"ז פעילויות חגיגי, משחקי שפה אינטראקטיביים ומחולל תעודת אלוף/ת העברית האישית שלכם.
+              לו"ז פעילויות חגיגי, משחק "שידוך ניבים" מובנה, קישורים לחידונים ומחולל תעודת אלוף/ת העברית האישית שלכם.
             </p>
           </div>
         </div>
 
         <!-- מצב נעול של יום השיא -->
         <div id="peak-locked-panel" class="peak-locked" hidden>
-          <div class="peak-locked__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-              <rect x="4" y="11" width="16" height="10" rx="2.5"></rect>
-              <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
-            </svg>
-          </div>
-          <h3 class="peak-locked__title">מתחם יום השיא ייפתח בקרוב</h3>
+          <div class="peak-locked__icon" aria-hidden="true">🔒</div>
+          <h3 class="peak-locked__title">מתחם יום השיא ייפתח בקרוב!</h3>
           <p class="peak-locked__desc" id="peak-locked-desc">
-            המתחם ייפתח אוטומטית בתאריך יום השיא. בינתיים — המשיכו לפתור את החידות היומיות כדי להגיע מוכנים!
+            המתחם ייפתח אוטומטית בתאריך יום השיא. בינתיים — המשיכו לפתור חידות ולצבור נקודות לכיתה!
           </p>
         </div>
 
@@ -170,10 +406,7 @@
             <!-- לו"ז יום השיא -->
             <div class="panel">
               <div class="panel__head">
-                <svg class="icon icon--mustard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <rect x="3" y="4" width="18" height="18" rx="2"></rect>
-                  <path d="M16 2v4M8 2v4M3 10h18"></path>
-                </svg>
+                <span class="panel__emoji" aria-hidden="true">📅</span>
                 <h3 class="panel__title">לו"ז פעילויות יום השיא</h3>
               </div>
               <ol class="timeline" id="schedule-list">
@@ -184,12 +417,7 @@
             <!-- קישורים למשחקים וחידונים חיצוניים -->
             <div class="panel">
               <div class="panel__head">
-                <svg class="icon icon--sky" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <path d="M6 12h4M8 10v4"></path>
-                  <circle cx="15.5" cy="11" r="1"></circle>
-                  <circle cx="17.5" cy="13" r="1"></circle>
-                  <rect x="2" y="6" width="20" height="12" rx="6"></rect>
-                </svg>
+                <span class="panel__emoji" aria-hidden="true">🎮</span>
                 <h3 class="panel__title">משחקים וחידונים מקוונים</h3>
               </div>
               <p class="panel__intro">
@@ -201,10 +429,34 @@
             </div>
           </div>
 
+          <!-- מיני-משחק מובנה ליום השיא: שידוך ניבים -->
+          <div class="panel mini-game-panel" id="idiom-game-panel">
+            <div class="mini-game__head">
+              <div>
+                <h3 class="panel__title">🧩 מיני-משחק ליום השיא: שידוך ניבים!</h3>
+                <p class="panel__sub">
+                  בחרו ניב עברי מצד ימין ואז את הפירוש המתאים לו מצד שמאל — כמה מהר תפצחו את כל 6 הזוגות?
+                </p>
+              </div>
+              <div class="mini-game__stats">
+                <span class="mini-game__pill" id="match-score-pill">זוגות שנמצאו: 0 / 6</span>
+                <button type="button" id="match-reset-btn" class="btn btn--secondary btn--sm">
+                  משחק חדש ↻
+                </button>
+              </div>
+            </div>
+
+            <div class="match-board">
+              <div class="match-col" id="match-idioms-col" aria-label="עמודת ניבים"></div>
+              <div class="match-col" id="match-meanings-col" aria-label="עמודת פירושים"></div>
+            </div>
+            <p class="match-feedback" id="match-feedback" hidden role="status" aria-live="polite"></p>
+          </div>
+
           <!-- מחולל תעודת אלוף/ת העברית -->
           <div class="certificate-studio" id="certificate-studio">
             <div class="certificate-studio__header">
-              <h3 class="certificate-studio__title">מחולל תעודת אלוף/ת העברית</h3>
+              <h3 class="certificate-studio__title">🎓 מחולל תעודת אלוף/ת העברית</h3>
               <p class="certificate-studio__desc">
                 הזינו את שמכם, בחרו ניסוח מותאם והורידו תעודה אישית מעוצבת לשמירה או להדפסה.
               </p>
@@ -226,7 +478,7 @@
                 </div>
 
                 <div class="form-field">
-                  <label for="student-class-input" class="form-label">כיתה <span class="form-label__opt">(רשות)</span></label>
+                  <label for="student-class-input" class="form-label">כיתה <span class="form-label__opt">(מתמלא אוטומטית מהבחירה למעלה)</span></label>
                   <input
                     type="text"
                     id="student-class-input"
@@ -251,32 +503,22 @@
                 </div>
 
                 <div class="cert-score-box">
-                  <span class="cert-score-box__label">הישג שנצבר אוטומטית מהחידות:</span>
-                  <strong class="cert-score-box__value" id="cert-form-score">0 מתוך 6 חידות</strong>
+                  <span class="cert-score-box__label">ההישג שנצבר אוטומטית השבוע:</span>
+                  <strong class="cert-score-box__value" id="cert-form-score">0 מתוך 6 חידות · 0 נקודות לכיתה</strong>
                 </div>
 
                 <div class="cert-actions">
                   <button type="button" id="download-png-btn" class="btn btn--primary">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                      <polyline points="7 10 12 15 17 10"></polyline>
-                      <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    <span>הורדה כתמונה (PNG)</span>
+                    <span>⬇️ הורדה כתמונה (PNG)</span>
                   </button>
 
                   <button type="button" id="print-pdf-btn" class="btn btn--secondary">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                      <polyline points="6 9 6 2 18 2 18 9"></polyline>
-                      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                      <rect x="6" y="14" width="12" height="8"></rect>
-                    </svg>
-                    <span>הדפסה / שמירה כ-PDF</span>
+                    <span>🖨️ הדפסה / שמירה כ-PDF</span>
                   </button>
                 </div>
               </form>
 
-              <!-- תצוגה מקדימה של התעודה (משמשת גם להדפסה) -->
+              <!-- תצוגה מקדימה של התעודה -->
               <div class="cert-preview-wrap">
                 <article class="certificate" id="certificate-preview" aria-label="תצוגה מקדימה של תעודת אלוף או אלופת העברית">
                   <div class="certificate__outer-frame">
@@ -342,7 +584,7 @@
     </div>
   </footer>
 
-  <!-- מודאל חידה יומית -->
+  <!-- מודאל חידה יומית (עם רמז, בחירת כיתה במידת הצורך, משוב ו-"הידעת?") -->
   <div
     class="modal-backdrop"
     id="riddle-modal"
@@ -354,6 +596,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-dialog__top">
         <div class="modal-dialog__meta">
+          <span class="modal-day-icon" id="modal-day-icon" aria-hidden="true">🍦</span>
           <span class="modal-day-pill" id="modal-day-label">יום א'</span>
           <span class="modal-category" id="modal-category-label">חידושי בן-יהודה</span>
         </div>
@@ -366,8 +609,22 @@
       </div>
 
       <div class="modal-dialog__body">
+        <!-- תזכורת לבחירת כיתה אם עדיין לא נבחרה -->
+        <div class="modal-class-prompt" id="modal-class-prompt" hidden>
+          <span class="modal-class-prompt__label">🏫 לאיזו כיתה לזקוף את הנקודות? בחרו כיתה:</span>
+          <div class="class-chips class-chips--compact" id="modal-class-chips"></div>
+        </div>
+
         <h3 class="modal-question" id="modal-title"></h3>
         <div class="modal-emoji-clue" id="modal-emoji-clue" hidden aria-label="רמז באימוג'ים"></div>
+
+        <!-- כפתור רמז ידידותי -->
+        <div class="hint-area" id="modal-hint-area">
+          <button type="button" class="hint-btn" id="modal-hint-btn" aria-expanded="false">
+            💡 צריכים רמז קטן?
+          </button>
+          <p class="hint-box" id="modal-hint-text" hidden></p>
+        </div>
 
         <div class="options-list" id="modal-options" role="group" aria-label="אפשרויות תשובה">
           <!-- יאוכלס דינמית על ידי script.js -->
@@ -377,18 +634,16 @@
 
         <div class="did-you-know" id="modal-dyk" hidden>
           <div class="did-you-know__head">
-            <svg class="icon icon--mustard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M9 18h6M10 22h4"></path>
-              <path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2h6c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"></path>
-            </svg>
+            <span aria-hidden="true">💡</span>
             <strong>הידעת?</strong>
+            <span class="did-you-know__badge" id="modal-unlocked-badge"></span>
           </div>
           <p class="did-you-know__text" id="modal-dyk-text"></p>
         </div>
       </div>
 
       <div class="modal-dialog__footer">
-        <button type="button" class="btn btn--secondary" id="modal-done-btn">חזרה למפת הימים</button>
+        <button type="button" class="btn btn--secondary" id="modal-done-btn">חזרה למפת המסע</button>
       </div>
     </div>
   </div>

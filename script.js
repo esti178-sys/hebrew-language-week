@@ -1,44 +1,57 @@
 /* ============================================================================
-   מדריך מהיר למורה — היכן משנים תאריכים, חידות, לו"ז וקישורים?
+   מדריך מהיר למורה — היכן משנים תאריכים, כיתות, חידות וחיבור ניקוד אוטומטי?
    ============================================================================
-   כל ההגדרות המרכזיות של האפליקציה מרוכזות מיד כאן למטה באובייקט CONFIG:
+   כל ההגדרות המרכזיות של האפליקציה נמצאות מיד כאן למטה באובייקט CONFIG:
 
-   1. תאריך ושעת יום השיא (עבור טיימר הספירה לאחור):
-      שנו את הערך של `peakDayDateTime` בפורמט: 'YYYY-MM-DDTHH:MM:SS'
-      לדוגמה: '2027-01-14T08:30:00'
+   1. רשימת הכיתות לתחרות (`classes`):
+      שנו את שמות הכיתות בבית הספר שלכם (לדוגמה: ["ה'1", "ה'2", "ו'1", ...]).
 
-   2. תאריכי פתיחת 7 הימים במפה (ימים א'–ו' + יום ז' יום השיא):
-      שנו את 7 התאריכים במערך `dayDates` בפורמט: 'YYYY-MM-DD'
-      כל יום נפתח אוטומטית בחצות של התאריך שנקבע לו.
-      (לבדיקה מיידית של כל הימים בכל זמן — לחצו על "מצב בדיקה למורה" בתחתית העמוד).
+   2. תאריכי פתיחת 7 הימים ויום השיא (`peakDayDateTime` ו-`dayDates`):
+      כל יום נפתח אוטומטית בחצות. לבדיקה מיידית לחצו על "מצב בדיקה למורה" בתחתית העמוד.
 
-   3. פרטי בית הספר והתעודה:
-      שנו את `schoolSubtitle`, `certificateSchoolLine` ו-`certificateSignature`.
+   3. חיבור ניקוד אוטומטי מהתלמידים אלייך כל יום (Firebase + Google Sheets/מייל):
+      - לניקוד חי בזמן אמת בין כל המכשירים: הדביקו את פרטי הפרויקט שלכם מ-Firebase בתוך `firebaseConfig`.
+      - לקבלת דוח ניקוד אוטומטי בטבלת Google Sheets + מייל סיכום יומי אוטומטי למורה:
+        הדביקו את כתובת ה-Web App של Google Apps Script בתוך `googleSheetWebhookUrl`.
+      - הוראות מלאות ופשוטות שלב־אחר־שלב (3 דקות הגדרה!) נמצאות בקובץ TEACHER_CLOUD_SETUP.md במאגר.
 
-   4. החידות היומיות (6 חידות לימים א'–ו'):
-      במערך `riddles` ניתן לערוך את השאלה, רמז האימוג'ים (אופציונלי),
-      4 אפשרויות הבחירה, מספר התשובה הנכונה (`correctIndex` מתחיל מ-0: 0=א', 1=ב', 2=ג', 3=ד'),
-      ואת קטע ה-"הידעת?" שנחשף לאחר פתרון נכון.
-
-   5. לו"ז יום השיא:
-      במערך `peakDaySchedule` ניתן להוסיף, למחוק או לערוך שעות, פעילויות ומיקומים.
-
-   6. קישורים למשחקים וחידונים חיצוניים (Kahoot, Wordwall, האקדמיה ללשון ועוד):
-      במערך `externalGames` החליפו את כתובות ה-`url` לקישורים הכיתתיים שלכם.
+   4. החידות היומיות (`riddles`), מילת היום (`wordsOfTheDay`), משחק הניבים (`idiomMatchPairs`),
+      לו"ז יום השיא (`peakDaySchedule`) והמשחקים החיצוניים (`externalGames`).
    ============================================================================ */
 
 const CONFIG = {
-  // --- 1. כותרת משנה ופרטי בית הספר בתעודה ---
-  schoolSubtitle: "חגיגת השפה והתרבות · כיתות ה'–ח'",
+  // --- 1. פרטי בית הספר והתעודה ---
+  schoolSubtitle: "חגיגת השפה העברית · כיתות ה'–ח'",
   certificateSchoolLine: 'שבוע השפה העברית · בית הספר',
   certificateSignature: 'צוות השפה העברית',
 
-  // --- 2. תאריך ושעת יום השיא (לטיימר הספירה לאחור) ---
-  // פורמט: 'YYYY-MM-DDTHH:MM:SS'
+  // --- 2. הכיתות המשתתפות בתחרות הניקוד ---
+  classes: ["ה'1", "ה'2", "ו'1", "ו'2", "ז'1", "ז'2", "ח'1", "ח'2"],
+
+  // --- 3. ניקוד אוטומטי לכל חידה ---
+  pointsPerRiddle: 10, // נקודות בסיס לפתרון נכון
+  firstTryBonus: 2, // בונוס נוסף לפתרון בניסיון ראשון
+
+  // --- 4. חיבור ענן לניקוד חי בין מכשירים (Firebase Firestore — אופציונלי) ---
+  // כדי להפעיל ניקוד משותף חי לכל בית הספר, הדביקו כאן את הפרטים מ-Firebase Console:
+  // (Project Settings -> Your apps -> Web app -> firebaseConfig)
+  firebaseConfig: {
+    apiKey: '',
+    authDomain: '',
+    projectId: '',
+    storageBucket: '',
+    messagingSenderId: '',
+    appId: '',
+  },
+
+  // --- 5. חיבור לטבלת Google Sheets + שליחת מייל יומי אוטומטי למורה (אופציונלי) ---
+  // הדביקו כאן את כתובת ה-Web App מ-Google Apps Script (ראו TEACHER_CLOUD_SETUP.md):
+  googleSheetWebhookUrl: '',
+
+  // --- 6. תאריך ושעת יום השיא (לטיימר הספירה לאחור) ---
   peakDayDateTime: '2026-11-29T08:30:00',
 
-  // --- 3. מערך תאריכי הפתיחה האוטומטית של 7 הימים (ימים א'–ז') ---
-  // פורמט: 'YYYY-MM-DD' (חייב להכיל 7 תאריכים: 6 ימי חידות + יום ז' יום השיא)
+  // --- 7. תאריכי הפתיחה האוטומטית של 7 הימים (ימים א'–ז') ---
   dayDates: [
     '2026-11-22', // יום א' — חידה 1
     '2026-11-23', // יום ב' — חידה 2
@@ -49,16 +62,19 @@ const CONFIG = {
     '2026-11-29', // יום ז' — יום השיא! (יום ראשון)
   ],
 
-  // --- 4. מערך 6 החידות היומיות (גילאי 10–14, כיתות ה'–ח') ---
+  // --- 8. מערך 6 החידות היומיות (גילאי 10–14, כיתות ה'–ח') ---
   riddles: [
     {
       id: 1,
       dayLabel: "יום א'",
+      icon: '🍦',
+      badgeName: 'מחדש/ת מילים',
       category: 'חידושי אליעזר בן-יהודה',
       shortDesc: 'איזו מילה מתוקה במיוחד חידש מחייה השפה העברית?',
       question:
         'אליעזר בן-יהודה חידש מאות מילים שאנו אומרים מדי יום. איזו מהמילים הבאות חידש משורש הקשור ל"קרישה" ו"קרח", וגם בהשראת הצליל של המילה האיטלקית Gelato?',
       emojiClue: '',
+      hint: 'חשבו על מאכל קר ומתוק שאוכלים בגביע או בכוס בימי הקיץ!',
       options: ['שוקולד', 'גְּלִידָה', 'סוכרייה', 'עוגייה'],
       correctIndex: 1,
       didYouKnow:
@@ -67,10 +83,13 @@ const CONFIG = {
     {
       id: 2,
       dayLabel: "יום ב'",
+      icon: '🐦',
+      badgeName: 'מפצח/ת פתגמים',
       category: "ניבים באימוג'ים",
       shortDesc: 'פענחו את הפתגם העברי המוכר שמסתתר מאחורי הסמלים.',
       question: "איזה פתגם עברי מוכר מסתתר מאחורי רצף האימוג'ים הבא?",
       emojiClue: '🐦 ✋  ⚖️  🐦🐦 🌳',
+      hint: 'בצד אחד יש ציפור אחת על היד, ובצד השני שתיים על העץ — מה עדיף?',
       options: [
         'ציפור לחשה לי באוזן',
         'התפוח לא נופל רחוק מהעץ',
@@ -84,11 +103,14 @@ const CONFIG = {
     {
       id: 3,
       dayLabel: "יום ג'",
+      icon: '💬',
+      badgeName: 'שומר/ת התקנית',
       category: 'עברית תקנית מול סלנג',
       shortDesc: 'איך מנסחים סלנג יומיומי בעברית עשירה ותקנית?',
       question:
         'בהפסקה אמר עידו לחבריו: "אל תתבאסו, בפעם הבאה נצליח!" — מהי המקבילה התקנית והמדויקת ביותר בעברית לפועל "להתבאס"?',
       emojiClue: '',
+      hint: 'כשמישהו אומר "התבאסתי", האם הוא שמח, מופתע או מאוכזב?',
       options: [
         'להתאכזב או להצטער',
         'להתפלא מאוד',
@@ -102,11 +124,14 @@ const CONFIG = {
     {
       id: 4,
       dayLabel: "יום ד'",
+      icon: '🔑',
+      badgeName: 'בלש/ית שורשים',
       category: 'שורשים ומשקלים',
       shortDesc: 'גלו את "הקוד הסודי" שמחבר בין מילים בעלות אותו משקל.',
       question:
         'הביטו בשלוש המילים הבאות: מַחְשֵׁב, מַפְתֵּחַ, מַסְרֵק. כולן שייכות לאותו משקל (מַקְטֵל). מה המשותף למשמעות שלהן?',
       emojiClue: '',
+      hint: 'שאלו את עצמכם: מה עושים עם מחשב, מפתח ומסרק? כולם עוזרים לנו לבצע פעולה!',
       options: [
         'כולן שמות של מקומות ומבנים',
         'כולן מתארות בעלי מקצוע',
@@ -120,10 +145,13 @@ const CONFIG = {
     {
       id: 5,
       dayLabel: "יום ה'",
+      icon: '🐘',
+      badgeName: 'אמן/ית הניבים',
       category: "ניבים באימוג'ים",
       shortDesc: 'אתגר פענוח קצר, ציורי ומפתיע במיוחד.',
       question: "איזה ניב עברי ציורי מתאר את המעבר שמופיע באימוג'ים הבאים?",
       emojiClue: '🪰  ➡️  🐘',
+      hint: 'חיה קטנטנה שהופכת לחיה ענקית — איך קוראים לזה כשמגזימים?',
       options: [
         'זיכרון של פיל',
         'לעשות מזבוב פיל',
@@ -137,11 +165,14 @@ const CONFIG = {
     {
       id: 6,
       dayLabel: "יום ו'",
+      icon: '👟',
+      badgeName: 'אלוף/ת הניסוח',
       category: 'עברית תקנית',
       shortDesc: 'חידת ההכנה האחרונה לפני יום השיא — בדקו את פעלי הלבוש!',
       question:
         'אתם מתארגנים בבוקר לקראת חגיגת יום השיא בבית הספר. איזה מהמשפטים הבאים כתוב בעברית תקנית לחלוטין?',
       emojiClue: '',
+      hint: 'זכרו: חולצה לובשים, נעליים נועלים, ומה עושים עם גרביים? (מתחיל באות ג\'!)',
       options: [
         'לבשתי חולצה חגיגית, לבשתי גרביים ושמתי נעליים.',
         'ענדתי חולצה חגיגית, חבשתי גרביים ונעלתי נעליים.',
@@ -154,12 +185,56 @@ const CONFIG = {
     },
   ],
 
-  // --- 5. לו"ז פעילויות יום השיא (יום ז') ---
+  // --- 9. כרטיסיות "מילת היום" המתהפכות (חידושי האקדמיה ללשון העברית) ---
+  wordsOfTheDay: [
+    {
+      word: 'הֶסְכֵּת',
+      meaning: 'פודקאסט',
+      example: 'מהשורש ס-כ-ת (להקשיב קשב רב). לדוגמה: "האזנתי בדרך לבית הספר להֶסְכֵּת מרתק על חלל!"',
+    },
+    {
+      word: 'יִשּׂוּמוֹן',
+      meaning: 'אפליקציה (App)',
+      example: 'מילה עברית חמודה ליישום קטן בטלפון. לדוגמה: "פתחנו את היישומון של שבוע השפה העברית!"',
+    },
+    {
+      word: 'כְּרוּכִית',
+      meaning: 'הסמל @ (שטרודל)',
+      example: 'בדיוק כמו עוגת שטרודל מגולגלת! גם הסימן במייל נקרא בעברית תקנית "כְּרוּכִית".',
+    },
+    {
+      word: 'מַרְשֶׁתֶת',
+      meaning: 'אינטרנט',
+      example: 'שילוב של "רשת" במשקל מַקְטֶלֶת — הרשת הגדולה שמחברת את כל העולם.',
+    },
+    {
+      word: 'מִסְרוֹן',
+      meaning: 'הודעת טקסט (SMS)',
+      example: 'מהמילה "מֶסֶר" בתוספת הסיומת "-וֹן" להקטנה — מסר קצר ומהיר.',
+    },
+    {
+      word: 'תַּקְרִישׁ',
+      meaning: 'ג\'לי (קינוח)',
+      example: 'מהשורש ק-ר-ש (להיקרש ולהתייצב). קינוח תַּקְרִישׁ תות — נשמע אלגנטי, לא?',
+    },
+  ],
+
+  // --- 10. זוגות למיני-משחק המובנה של יום השיא ("שידוך ניבים!") ---
+  idiomMatchPairs: [
+    { id: 1, idiom: 'ראש קטן', meaning: 'להתחמק מאחריות ולעשות רק את המינימום' },
+    { id: 2, idiom: 'לשבור את הקרח', meaning: 'להפיג מבוכה וליצור אווירה נעימה' },
+    { id: 3, idiom: 'עשרת מונים', meaning: 'הרבה יותר, פי כמה וכמה' },
+    { id: 4, idiom: 'על קצה המזלג', meaning: 'בקצרה, רק טעימה מהנושא' },
+    { id: 5, idiom: 'יוצא מן הכלל', meaning: 'מיוחד ונפלא במיוחד' },
+    { id: 6, idiom: 'טמן את ראשו בחול', meaning: 'התעלם מבעיה במקום להתמודד איתה' },
+  ],
+
+  // --- 11. לו"ז פעילויות יום השיא (יום ז') ---
   peakDaySchedule: [
     {
       time: '08:15',
       title: 'פתיחה חגיגית והתכנסות שכבתית',
-      description: 'דברי פתיחה, סרטון קצר על מחייה השפה העברית והזנקת יום השיא.',
+      description: 'דברי פתיחה, סרטון קצר על מחייה השפה העברית והכרזה על הכיתה המובילה בתחרות.',
       location: 'אולם הספורט / רחבת בית הספר',
     },
     {
@@ -182,14 +257,13 @@ const CONFIG = {
     },
     {
       time: '12:15',
-      title: 'טקס סיום והפקת תעודות אלופי העברית',
-      description: 'הכרזה על המילים הזוכות, סיכום השבוע והענקת תעודות אישיות לכל משתתף ומשתתפת.',
+      title: 'טקס סיום, הכרזת הכיתה הזוכה וחלוקת תעודות',
+      description: 'הכרזה על המילים הזוכות, הענקת גביע לאלופת השבוע והפקת תעודות אישיות לכל תלמיד ותלמידה.',
       location: 'כיתות האם',
     },
   ],
 
-  // --- 6. קישורים למשחקים וחידונים חיצוניים ליום השיא ---
-  // ניתן להחליף את כתובות ה-url לקישורי Kahoot / Wordwall / Quizizz שהכנתם לכיתה!
+  // --- 12. קישורים למשחקים וחידונים חיצוניים ליום השיא ---
   externalGames: [
     {
       title: 'חידוני האקדמיה ללשון העברית',
@@ -219,28 +293,57 @@ const CONFIG = {
    ============================================================================ */
 
 const STORAGE_KEYS = {
-  SOLVED: 'hlw_solved_riddles_v1',
-  CERT_PROFILE: 'hlw_cert_profile_v1',
+  SOLVED: 'hlw_solved_meta_v2',
+  CERT_PROFILE: 'hlw_cert_profile_v2',
+  SELECTED_CLASS: 'hlw_selected_class_v2',
+  LOCAL_SCORES: 'hlw_class_scores_v2',
+  SOUND_ENABLED: 'hlw_sound_enabled_v2',
 };
 
 const HEBREW_LETTERS = ["א'", "ב'", "ג'", "ד'"];
+const PRAISE_PHRASES = [
+  'בול בפוני! 🎯',
+  'אלופים בעברית! 🏆',
+  'שפה ברמה גבוהה! ✨',
+  'פגיעה מדויקת! 🌟',
+  'איזה מוח חד! 🧠',
+];
 
 const state = {
-  solvedIds: new Set(),
+  // מיפוי riddleId -> { points, className, solvedAt }
+  solvedMeta: {},
+  selectedClass: '',
+  // מיפוי className -> { total: number, byDay: { [dayId]: number } }
+  classScores: {},
+  leaderboardTab: 'today', // 'today' | 'weekly'
   teacherMode: false,
+  teacherReportOpen: false,
   activeRiddleId: null,
+  activeRiddleHadWrongAttempt: false,
+  soundEnabled: true,
+  wordIndex: 0,
+  cloudSyncMode: 'local', // 'local' | 'firebase' | 'sheets' | 'both'
   certProfile: {
     name: '',
     className: '',
     gender: 'female',
+  },
+  // מצב מיני-משחק שידוך ניבים
+  matchGame: {
+    selectedIdiomId: null,
+    selectedMeaningId: null,
+    matchedIds: new Set(),
+    shuffledMeanings: [],
   },
 };
 
 let countdownInterval = null;
 let toastTimer = null;
 let lastFocusedElement = null;
+let firebaseApi = null;
+let audioCtx = null;
 
-// --- עזרי תאריכים (בזמן מקומי בלבד למניעת סטיות אזור זמן) ---
+// --- עזרי תאריכים (בזמן מקומי בלבד) ---
 
 function parseLocalDate(isoDateStr) {
   const [year, month, day] = isoDateStr.split('-').map(Number);
@@ -285,15 +388,76 @@ function isDayToday(dayIndex) {
   return getTodayStart().getTime() === parseLocalDate(dateStr).getTime();
 }
 
+// מחזיר את מזהה היום הנוכחי (1–6) לצורך לשונית "ניקוד היום"
+function getCurrentCompetitionDayId() {
+  for (let i = 0; i < CONFIG.riddles.length; i += 1) {
+    if (isDayToday(i)) return CONFIG.riddles[i].id;
+  }
+  // אם היום אינו אחד מ-6 ימי החידות, מציגים את היום הפתוח האחרון או יום 1
+  let lastOpen = 1;
+  for (let i = 0; i < CONFIG.riddles.length; i += 1) {
+    if (getTodayStart().getTime() >= parseLocalDate(CONFIG.dayDates[i]).getTime()) {
+      lastOpen = CONFIG.riddles[i].id;
+    }
+  }
+  return lastOpen;
+}
+
+// --- אתחול מבנה ניקוד כיתות ---
+
+function createEmptyScoresMap() {
+  const map = {};
+  CONFIG.classes.forEach((cls) => {
+    map[cls] = { total: 0, byDay: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 } };
+  });
+  return map;
+}
+
+function ensureClassEntry(cls) {
+  if (!state.classScores[cls]) {
+    state.classScores[cls] = { total: 0, byDay: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 } };
+  }
+  return state.classScores[cls];
+}
+
 // --- שמירה וטעינה מ-localStorage ---
 
 function loadStateFromStorage() {
+  state.classScores = createEmptyScoresMap();
+
   try {
     const rawSolved = localStorage.getItem(STORAGE_KEYS.SOLVED);
     if (rawSolved) {
       const parsed = JSON.parse(rawSolved);
-      if (Array.isArray(parsed)) {
-        state.solvedIds = new Set(parsed.filter((id) => Number.isInteger(id)));
+      if (parsed && typeof parsed === 'object') {
+        state.solvedMeta = parsed;
+      }
+    }
+
+    const rawClass = localStorage.getItem(STORAGE_KEYS.SELECTED_CLASS);
+    if (rawClass && CONFIG.classes.includes(rawClass)) {
+      state.selectedClass = rawClass;
+    }
+
+    const rawScores = localStorage.getItem(STORAGE_KEYS.LOCAL_SCORES);
+    if (rawScores) {
+      const parsedScores = JSON.parse(rawScores);
+      if (parsedScores && typeof parsedScores === 'object') {
+        CONFIG.classes.forEach((cls) => {
+          if (parsedScores[cls]) {
+            state.classScores[cls] = {
+              total: Number(parsedScores[cls].total) || 0,
+              byDay: {
+                1: Number(parsedScores[cls].byDay?.[1]) || 0,
+                2: Number(parsedScores[cls].byDay?.[2]) || 0,
+                3: Number(parsedScores[cls].byDay?.[3]) || 0,
+                4: Number(parsedScores[cls].byDay?.[4]) || 0,
+                5: Number(parsedScores[cls].byDay?.[5]) || 0,
+                6: Number(parsedScores[cls].byDay?.[6]) || 0,
+              },
+            };
+          }
+        });
       }
     }
 
@@ -307,24 +471,323 @@ function loadStateFromStorage() {
         state.certProfile.gender = parsedProfile.gender === 'male' ? 'male' : 'female';
       }
     }
+
+    if (!state.certProfile.className && state.selectedClass) {
+      state.certProfile.className = state.selectedClass;
+    }
+
+    const rawSound = localStorage.getItem(STORAGE_KEYS.SOUND_ENABLED);
+    if (rawSound === 'false') {
+      state.soundEnabled = false;
+    }
   } catch {
-    // במקרה של הגבלת אחסון מקומי בדפדפן, ממשיכים בזיכרון ללא תקלה
+    // ממשיכים בזיכרון במקרה של הגבלת אחסון
   }
 }
 
-function saveSolvedToStorage() {
+function saveLocalState() {
   try {
-    localStorage.setItem(STORAGE_KEYS.SOLVED, JSON.stringify([...state.solvedIds]));
-  } catch {
-    // התעלמות שקטה אם localStorage חסום
-  }
-}
-
-function saveProfileToStorage() {
-  try {
+    localStorage.setItem(STORAGE_KEYS.SOLVED, JSON.stringify(state.solvedMeta));
+    localStorage.setItem(STORAGE_KEYS.SELECTED_CLASS, state.selectedClass);
+    localStorage.setItem(STORAGE_KEYS.LOCAL_SCORES, JSON.stringify(state.classScores));
     localStorage.setItem(STORAGE_KEYS.CERT_PROFILE, JSON.stringify(state.certProfile));
+    localStorage.setItem(STORAGE_KEYS.SOUND_ENABLED, String(state.soundEnabled));
   } catch {
-    // התעלמות שקטה אם localStorage חסום
+    // התעלמות שקטה
+  }
+}
+
+function getSolvedCount() {
+  return Object.keys(state.solvedMeta).length;
+}
+
+function getMyEarnedPoints() {
+  return Object.values(state.solvedMeta).reduce((sum, entry) => sum + (Number(entry.points) || 0), 0);
+}
+
+// --- צלילים עדינים (Web Audio API ללא קבצים חיצוניים) ---
+
+function playChime(type) {
+  if (!state.soundEnabled) return;
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    if (!audioCtx) audioCtx = new AudioContextClass();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    const now = audioCtx.currentTime;
+    const notes = type === 'success' ? [523.25, 659.25, 783.99, 1046.5] : [260, 215];
+    const step = type === 'success' ? 0.085 : 0.1;
+
+    notes.forEach((freq, idx) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type === 'success' ? 'triangle' : 'sine';
+      osc.frequency.setValueAtTime(freq, now + idx * step);
+
+      gain.gain.setValueAtTime(0.001, now + idx * step);
+      gain.gain.exponentialRampToValueAtTime(0.11, now + idx * step + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * step + 0.28);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now + idx * step);
+      osc.stop(now + idx * step + 0.3);
+    });
+  } catch {
+    // אם הדפדפן חוסם שמע — ממשיכים בשקט
+  }
+}
+
+function updateSoundButtonUI() {
+  const btn = document.getElementById('sound-toggle-btn');
+  const icon = document.getElementById('sound-toggle-icon');
+  const label = document.getElementById('sound-toggle-label');
+  if (!btn) return;
+  btn.setAttribute('aria-pressed', String(state.soundEnabled));
+  if (icon) icon.textContent = state.soundEnabled ? '🔊' : '🔇';
+  if (label) label.textContent = state.soundEnabled ? 'צלילים פעילים' : 'צלילים מושתקים';
+}
+
+// --- חגיגת קונפטי צבעונית (HTML5 Canvas) ---
+
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const colors = ['#0ea5e9', '#f5c443', '#16a34a', '#0e2a47', '#38bdf8', '#fb923c'];
+  const particles = Array.from({ length: 85 }, () => ({
+    x: canvas.width * (0.2 + Math.random() * 0.6),
+    y: canvas.height * 0.35 + (Math.random() - 0.5) * 60,
+    vx: (Math.random() - 0.5) * 12,
+    vy: -6 - Math.random() * 9,
+    size: 6 + Math.random() * 6,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    rot: Math.random() * Math.PI * 2,
+    vRot: (Math.random() - 0.5) * 0.25,
+    alpha: 1,
+  }));
+
+  let frame = 0;
+  function animate() {
+    frame += 1;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    let alive = false;
+    particles.forEach((p) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.32;
+      p.rot += p.vRot;
+      if (frame > 55) p.alpha -= 0.022;
+
+      if (p.alpha > 0 && p.y < canvas.height + 20) {
+        alive = true;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 3, p.size, p.size * 0.66);
+        ctx.restore();
+      }
+    });
+
+    if (alive && frame < 140) {
+      requestAnimationFrame(animate);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+// --- סנכרון ענן אופציונלי (Firebase Firestore + Google Sheets Webhook) ---
+
+function hasFirebaseConfigured() {
+  const fc = CONFIG.firebaseConfig;
+  return Boolean(fc && fc.apiKey && fc.projectId);
+}
+
+function hasSheetsConfigured() {
+  return Boolean(CONFIG.googleSheetWebhookUrl && CONFIG.googleSheetWebhookUrl.trim().startsWith('http'));
+}
+
+function updateCloudSyncLabels() {
+  const syncPill = document.getElementById('leaderboard-sync-pill');
+  const teacherSync = document.getElementById('teacher-sync-status');
+
+  const fbOn = state.cloudSyncMode === 'firebase' || state.cloudSyncMode === 'both';
+  const sheetsOn = hasSheetsConfigured();
+
+  let pillText = 'מצב תצוגה מקומי';
+  let teacherText =
+    'מצב סנכרון: מקומי בדפדפן. לחיבור ניקוד חי מכל התלמידים ודוח מייל יומי אוטומטי — ראו TEACHER_CLOUD_SETUP.md.';
+
+  if (fbOn && sheetsOn) {
+    pillText = 'מחובר חי · Firebase + גיליון מורה';
+    teacherText = 'מחובר ל-Firebase Firestore (ניקוד חי בזמן אמת) ול-Google Sheets (יומן + מייל יומי אוטומטי).';
+  } else if (fbOn) {
+    pillText = 'ניקוד חי בזמן אמת · Firebase';
+    teacherText = 'מחובר ל-Firebase Firestore! כל ניקוד מכל תלמיד מתעדכן כאן אוטומטית בזמן אמת.';
+  } else if (sheetsOn) {
+    pillText = 'מחובר לגיליון מורה · Google Sheets';
+    teacherText = 'מחובר ל-Google Sheets! כל פתרון נשלח אוטומטית לטבלה שלך ונשלח אלייך בסיכום היומי.';
+  }
+
+  if (syncPill) {
+    syncPill.textContent = pillText;
+    syncPill.classList.toggle('is-live', fbOn || sheetsOn);
+  }
+  if (teacherSync) {
+    teacherSync.textContent = teacherText;
+  }
+}
+
+async function initCloudSync() {
+  const sheetsOn = hasSheetsConfigured();
+  if (sheetsOn) {
+    state.cloudSyncMode = 'sheets';
+    // משיכת ניקוד עדכני מגיליון Google Sheets אם מוגדר
+    try {
+      const resp = await fetch(`${CONFIG.googleSheetWebhookUrl}?action=scores`);
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data && data.scores) {
+          applyRemoteScoresSnapshot(data.scores);
+        }
+      }
+    } catch {
+      // ממשיכים עם נתונים מקומיים אם אין תשובת קריאה
+    }
+  }
+
+  if (hasFirebaseConfigured()) {
+    try {
+      const [{ initializeApp }, firestore] = await Promise.all([
+        import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js'),
+        import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js'),
+      ]);
+
+      const app = initializeApp(CONFIG.firebaseConfig);
+      const db = firestore.getFirestore(app);
+      firebaseApi = { db, ...firestore };
+      state.cloudSyncMode = sheetsOn ? 'both' : 'firebase';
+
+      // האזנה חיה לטבלת ניקוד הכיתות ב-Firestore
+      const scoresCol = firestore.collection(db, 'classScores');
+      firestore.onSnapshot(scoresCol, (snapshot) => {
+        const fresh = createEmptyScoresMap();
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const cls = docSnap.id;
+          if (!fresh[cls]) {
+            fresh[cls] = { total: 0, byDay: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 } };
+          }
+          fresh[cls].total = Number(data.total) || 0;
+          for (let d = 1; d <= 6; d += 1) {
+            fresh[cls].byDay[d] = Number(data[`day_${d}`]) || 0;
+          }
+        });
+        state.classScores = fresh;
+        renderLeaderboard();
+        renderTeacherReportTable();
+      });
+    } catch {
+      // במקרה של הגדרת Firebase חלקית או חוסר אינטרנט נשארים במצב מקומי
+    }
+  }
+
+  updateCloudSyncLabels();
+}
+
+function applyRemoteScoresSnapshot(remoteMap) {
+  const merged = createEmptyScoresMap();
+  Object.keys(remoteMap).forEach((cls) => {
+    const entry = remoteMap[cls];
+    merged[cls] = {
+      total: Number(entry.total) || 0,
+      byDay: {
+        1: Number(entry.byDay?.[1]) || 0,
+        2: Number(entry.byDay?.[2]) || 0,
+        3: Number(entry.byDay?.[3]) || 0,
+        4: Number(entry.byDay?.[4]) || 0,
+        5: Number(entry.byDay?.[5]) || 0,
+        6: Number(entry.byDay?.[6]) || 0,
+      },
+    };
+  });
+  state.classScores = merged;
+  renderLeaderboard();
+  renderTeacherReportTable();
+}
+
+async function recordClassPoints({ className, riddleId, points, studentName }) {
+  if (!className || !points) return;
+
+  // 1. עדכון מקומי מיידי (לתגובה מהירה למשתמש)
+  const entry = ensureClassEntry(className);
+  entry.total += points;
+  entry.byDay[riddleId] = (entry.byDay[riddleId] || 0) + points;
+  saveLocalState();
+  renderLeaderboard();
+  renderTeacherReportTable();
+
+  // 2. שליחה אוטומטית ל-Firebase Firestore (אם מוגדר)
+  if (firebaseApi) {
+    try {
+      const { db, doc, setDoc, increment, collection, addDoc, serverTimestamp } = firebaseApi;
+      const classDocRef = doc(db, 'classScores', className);
+      await setDoc(
+        classDocRef,
+        {
+          total: increment(points),
+          [`day_${riddleId}`]: increment(points),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      // שמירת רשומת יומן יומית מפורטת למורה
+      await addDoc(collection(db, 'dailySubmissions'), {
+        className,
+        riddleId,
+        points,
+        studentName: studentName || 'תלמיד/ה',
+        dateIso: new Date().toISOString().slice(0, 10),
+        createdAt: serverTimestamp(),
+      });
+    } catch {
+      // ממשיכים ללא הפרעה לתלמיד
+    }
+  }
+
+  // 3. שליחה אוטומטית ל-Google Sheets Webhook (ליומן + מייל יומי אוטומטי למורה)
+  if (hasSheetsConfigured()) {
+    try {
+      await fetch(CONFIG.googleSheetWebhookUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          dateIso: new Date().toISOString().slice(0, 10),
+          timeStr: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }),
+          riddleId,
+          dayLabel: CONFIG.riddles.find((r) => r.id === riddleId)?.dayLabel || `יום ${riddleId}`,
+          className,
+          studentName: studentName || 'תלמיד/ה',
+          points,
+        }),
+      });
+    } catch {
+      // התעלמות שקטה במקרה של ניתוק רגעי
+    }
   }
 }
 
@@ -339,14 +802,92 @@ function showToast(message) {
   if (toastTimer) clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
     toastEl.hidden = true;
-  }, 3200);
+  }, 3400);
+}
+
+// --- עדכון בועת הדיבור של חכמון הינשוף ---
+
+function updateMascotSpeech() {
+  const speechEl = document.getElementById('mascot-speech');
+  if (!speechEl) return;
+
+  const solved = getSolvedCount();
+  const total = CONFIG.riddles.length;
+  const pts = getMyEarnedPoints();
+
+  if (!state.selectedClass) {
+    speechEl.textContent = 'בחרו את הכיתה שלכם כאן למטה, פתרו את חידת היום וצברו נקודות לאליפות!';
+  } else if (solved === 0) {
+    speechEl.textContent = `איזה כיף, נציגי כיתה ${state.selectedClass}! פתרו חידה ראשונה וזכו בעד ${CONFIG.pointsPerRiddle + CONFIG.firstTryBonus} נקודות לכיתה!`;
+  } else if (solved < total) {
+    speechEl.textContent = `אלופים מכיתה ${state.selectedClass}! כבר פתרתם ${solved} מתוך ${total} חידות וצברתם ${pts} נקודות לכיתה!`;
+  } else {
+    speechEl.textContent = `וואו!! פתרתם את כל ${total} החידות והבאתם ${pts} נקודות אדירות לכיתה ${state.selectedClass}! 🏆`;
+  }
+}
+
+// --- בוחר הכיתה בכותרת ---
+
+function renderClassPicker() {
+  const chipsEl = document.getElementById('hero-class-chips');
+  const selectedBar = document.getElementById('class-selected-bar');
+  const changeBtn = document.getElementById('change-class-btn');
+  const titleEl = document.getElementById('class-picker-title');
+  const badgeEl = document.getElementById('selected-class-badge');
+  const ptsEl = document.getElementById('selected-class-points-text');
+
+  if (!chipsEl) return;
+  chipsEl.innerHTML = '';
+
+  CONFIG.classes.forEach((cls) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `class-chip${state.selectedClass === cls ? ' is-selected' : ''}`;
+    btn.textContent = cls;
+    btn.addEventListener('click', () => selectStudentClass(cls));
+    chipsEl.appendChild(btn);
+  });
+
+  if (state.selectedClass) {
+    chipsEl.hidden = true;
+    selectedBar.hidden = false;
+    changeBtn.hidden = false;
+    titleEl.textContent = '🏫 הכיתה שלך בתחרות השבועית:';
+    badgeEl.textContent = `כיתה ${state.selectedClass}`;
+    ptsEl.textContent = `צברת עד כה ${getMyEarnedPoints()} נקודות לכיתה! 🌟`;
+  } else {
+    chipsEl.hidden = false;
+    selectedBar.hidden = true;
+    changeBtn.hidden = true;
+    titleEl.textContent = '🏫 באיזו כיתה אתם? בחרו כדי לצבור נקודות לתחרות הכיתות:';
+  }
+}
+
+function selectStudentClass(cls) {
+  state.selectedClass = cls;
+  state.certProfile.className = cls;
+
+  const classInput = document.getElementById('student-class-input');
+  if (classInput) classInput.value = cls;
+
+  saveLocalState();
+  renderClassPicker();
+  renderLeaderboard();
+  updateMascotSpeech();
+  updateCertificatePreview();
+
+  // אם מודאל החידה פתוח ומציג תזכורת לבחירת כיתה — מסתירים אותה
+  const modalPrompt = document.getElementById('modal-class-prompt');
+  if (modalPrompt) modalPrompt.hidden = true;
+
+  showToast(`מעולה! כל חידה שתפתרו תוסיף נקודות לכיתה ${cls} 🏆`);
 }
 
 // --- עדכון מד התקדמות ---
 
 function renderProgressSummary() {
   const total = CONFIG.riddles.length;
-  const solvedCount = state.solvedIds.size;
+  const solvedCount = getSolvedCount();
   const percentage = total > 0 ? Math.round((solvedCount / total) * 100) : 0;
 
   const countText = document.getElementById('progress-count-text');
@@ -356,19 +897,17 @@ function renderProgressSummary() {
   if (countText) {
     countText.textContent =
       solvedCount === total
-        ? `כל הכבוד! השלמת ${solvedCount} מתוך ${total} חידות`
+        ? `כל הכבוד! השלמת ${solvedCount} מתוך ${total} חידות 🎉`
         : `${solvedCount} מתוך ${total} חידות הושלמו`;
   }
-  if (fill) {
-    fill.style.width = `${percentage}%`;
-  }
+  if (fill) fill.style.width = `${percentage}%`;
   if (track) {
     track.setAttribute('aria-valuemax', String(total));
     track.setAttribute('aria-valuenow', String(solvedCount));
   }
 }
 
-// --- טיימר ספירה לאחור ליום השיא ---
+// --- טיימר ספירה לאחור ---
 
 function initCountdown() {
   const targetDate = new Date(CONFIG.peakDayDateTime);
@@ -390,9 +929,7 @@ function initCountdown() {
   }
 
   function tick() {
-    const now = Date.now();
-    const diff = targetDate.getTime() - now;
-
+    const diff = targetDate.getTime() - Date.now();
     if (Number.isNaN(diff) || diff <= 0) {
       if (grid) grid.hidden = true;
       if (liveMsg) liveMsg.hidden = false;
@@ -424,7 +961,7 @@ function initCountdown() {
   countdownInterval = setInterval(tick, 1000);
 }
 
-// --- אייקוני SVG ---
+// --- אייקוני SVG קומפקטיים ---
 
 function getLockSvg() {
   return `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -434,7 +971,7 @@ function getLockSvg() {
 }
 
 function getCheckSvg() {
-  return `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
+  return `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
     <polyline points="20 6 9 17 4 12"></polyline>
   </svg>`;
 }
@@ -446,24 +983,18 @@ function getArrowLeftSvg() {
   </svg>`;
 }
 
-function getStarSvg() {
-  return `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-  </svg>`;
-}
-
-// --- רינדור מפת 7 הימים ---
+// --- רינדור מפת המסע של 7 הימים ---
 
 function renderRoadmap() {
   const grid = document.getElementById('days-grid');
   if (!grid) return;
   grid.innerHTML = '';
 
-  // 6 ימי החידות (ימים א'–ו')
   CONFIG.riddles.forEach((riddle, index) => {
     const unlocked = isDayUnlocked(index);
     const today = isDayToday(index);
-    const solved = state.solvedIds.has(riddle.id);
+    const solvedEntry = state.solvedMeta[riddle.id];
+    const solved = Boolean(solvedEntry);
     const dateLabel = formatShortHebrewDate(CONFIG.dayDates[index]);
 
     const card = document.createElement('button');
@@ -478,19 +1009,24 @@ function renderRoadmap() {
     card.className = classes.join(' ');
 
     let statusHtml = '';
+    let ptsHtml = '';
     let ctaHtml = '';
 
     if (!unlocked) {
       statusHtml = `<span class="day-card__status day-card__status--locked">${getLockSvg()}<span>ייפתח ב-${dateLabel}</span></span>`;
-      ctaHtml = `<span class="day-card__cta">${getLockSvg()}<span>נעול עד ${dateLabel}</span></span>`;
+      ptsHtml = `<span class="day-card__pts">+${CONFIG.pointsPerRiddle} נק'</span>`;
+      ctaHtml = `<span class="day-card__cta">${getLockSvg()}<span>נעול</span></span>`;
     } else if (solved) {
-      statusHtml = `<span class="day-card__status day-card__status--done">${getCheckSvg()}<span>הושלם</span></span>`;
-      ctaHtml = `<span class="day-card__cta"><span>צפייה בפתרון וב"הידעת?"</span>${getArrowLeftSvg()}</span>`;
+      statusHtml = `<span class="day-card__status day-card__status--done">${getCheckSvg()}<span>הושלם!</span></span>`;
+      ptsHtml = `<span class="day-card__pts">+${solvedEntry.points} נק' נצברו ✓</span>`;
+      ctaHtml = `<span class="day-card__cta"><span>צפייה ב"הידעת?"</span>${getArrowLeftSvg()}</span>`;
     } else if (today) {
-      statusHtml = `<span class="day-card__status day-card__status--today">פתוח היום</span>`;
-      ctaHtml = `<span class="day-card__cta"><span>פתרו את חידת היום</span>${getArrowLeftSvg()}</span>`;
+      statusHtml = `<span class="day-card__status day-card__status--today">🔥 פתוח היום!</span>`;
+      ptsHtml = `<span class="day-card__pts">עד +${CONFIG.pointsPerRiddle + CONFIG.firstTryBonus} נק'</span>`;
+      ctaHtml = `<span class="day-card__cta"><span>לפתרון החידה</span>${getArrowLeftSvg()}</span>`;
     } else {
       statusHtml = `<span class="day-card__status day-card__status--open">פתוח</span>`;
+      ptsHtml = `<span class="day-card__pts">עד +${CONFIG.pointsPerRiddle + CONFIG.firstTryBonus} נק'</span>`;
       ctaHtml = `<span class="day-card__cta"><span>לפתרון החידה</span>${getArrowLeftSvg()}</span>`;
     }
 
@@ -498,7 +1034,7 @@ function renderRoadmap() {
       <div>
         <div class="day-card__top">
           <div class="day-card__day-group">
-            <span class="day-card__number">${index + 1}</span>
+            <span class="day-card__icon-badge" aria-hidden="true">${unlocked ? riddle.icon : '🔒'}</span>
             <div>
               <span class="day-card__day-name">${riddle.dayLabel}</span>
               <span class="day-card__date">${dateLabel}</span>
@@ -509,12 +1045,15 @@ function renderRoadmap() {
         <h3 class="day-card__topic">${riddle.category}</h3>
         <p class="day-card__desc">${riddle.shortDesc}</p>
       </div>
-      ${ctaHtml}
+      <div class="day-card__bottom">
+        ${ptsHtml}
+        ${ctaHtml}
+      </div>
     `;
 
     card.addEventListener('click', () => {
       if (!unlocked) {
-        showToast(`חידת ${riddle.dayLabel} תיפתח אוטומטית בתאריך ${dateLabel}.`);
+        showToast(`חידת ${riddle.dayLabel} תיפתח אוטומטית בתאריך ${dateLabel}. סבלנות! ⏳`);
         return;
       }
       openRiddleModal(riddle.id);
@@ -523,7 +1062,7 @@ function renderRoadmap() {
     grid.appendChild(card);
   });
 
-  // כרטיס יום ז' — יום השיא
+  // כרטיס פסגת יום השיא (יום ז')
   const peakIndex = 6;
   const peakUnlocked = isDayUnlocked(peakIndex);
   const peakDateLabel = formatShortHebrewDate(CONFIG.dayDates[peakIndex]);
@@ -537,20 +1076,20 @@ function renderRoadmap() {
   peakCard.innerHTML = `
     <div class="day-card__peak-body">
       <div class="day-card__peak-meta">
-        <span class="day-card__number">${getStarSvg()}</span>
+        <span class="day-card__icon-badge" aria-hidden="true">${peakUnlocked ? '🏆' : '🔒'}</span>
         <div>
-          <span class="day-card__day-name">יום ז' · יום השיא החגיגי</span>
+          <span class="day-card__day-name">יום ז' · פסגת יום השיא החגיגי</span>
           <span class="day-card__date">${peakDateLabel}</span>
         </div>
         <span class="day-card__status ${
           peakUnlocked ? 'day-card__status--today' : 'day-card__status--locked'
         }">
-          ${peakUnlocked ? 'המתחם פתוח!' : `${getLockSvg()}<span>ייפתח ב-${peakDateLabel}</span>`}
+          ${peakUnlocked ? '🎉 המתחם פתוח!' : `${getLockSvg()}<span>ייפתח ב-${peakDateLabel}</span>`}
         </span>
       </div>
-      <h3 class="day-card__topic">לו"ז חגיגי, משחקים ומחולל תעודת אלוף/ת העברית</h3>
+      <h3 class="day-card__topic">לו"ז חגיגי, משחק שידוך ניבים ומחולל תעודת אלוף/ת העברית</h3>
       <p class="day-card__desc">
-        השיא של שבוע השפה העברית: פעילויות, חידונים כיתתיים ותעודה אישית מעוצבת להורדה ולהדפסה.
+        האירוע המסכם של שבוע השפה העברית: משחקי שפה, חידונים כיתתיים ותעודה אישית מעוצבת להורדה ולהדפסה.
       </p>
     </div>
     <span class="day-card__cta">
@@ -568,15 +1107,154 @@ function renderRoadmap() {
       return;
     }
     const peakSection = document.getElementById('peak-day-section');
-    if (peakSection) {
-      peakSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    if (peakSection) peakSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
   grid.appendChild(peakCard);
 }
 
-// --- מודאל החידה היומית ---
+// --- מדף תגי ההישגים (מדבקות) ---
+
+function renderBadgesShelf() {
+  const grid = document.getElementById('badges-grid');
+  const summary = document.getElementById('badges-summary-text');
+  if (!grid) return;
+
+  grid.innerHTML = '';
+  const solvedCount = getSolvedCount();
+
+  if (summary) {
+    summary.textContent =
+      solvedCount === CONFIG.riddles.length
+        ? 'מדהים! אספת את כל 6 תגי ההישגים של שבוע השפה העברית! 🏆'
+        : `נאספו ${solvedCount} מתוך ${CONFIG.riddles.length} מדבקות — פתרו עוד חידות כדי להשלים את האוסף!`;
+  }
+
+  CONFIG.riddles.forEach((riddle) => {
+    const unlocked = Boolean(state.solvedMeta[riddle.id]);
+    const item = document.createElement('div');
+    item.className = `badge-sticker${unlocked ? ' is-unlocked' : ''}`;
+    item.title = unlocked
+      ? `הושג ב${riddle.dayLabel}!`
+      : `פתרו את חידת ${riddle.dayLabel} כדי לפתוח תג זה`;
+    item.innerHTML = `
+      <span class="badge-sticker__icon" aria-hidden="true">${riddle.icon}</span>
+      <span class="badge-sticker__name">${riddle.badgeName}</span>
+    `;
+    grid.appendChild(item);
+  });
+}
+
+// --- כרטיסיית "מילת היום" המתהפכת ---
+
+function renderWordOfTheDay() {
+  const list = CONFIG.wordsOfTheDay;
+  if (!list.length) return;
+  const item = list[state.wordIndex % list.length];
+
+  const frontEl = document.getElementById('word-front-text');
+  const meaningEl = document.getElementById('word-back-meaning');
+  const exampleEl = document.getElementById('word-back-example');
+  const idxEl = document.getElementById('word-index-label');
+  const cardEl = document.getElementById('word-flip-card');
+
+  if (frontEl) frontEl.textContent = item.word;
+  if (meaningEl) meaningEl.textContent = item.meaning;
+  if (exampleEl) exampleEl.textContent = item.example;
+  if (idxEl) idxEl.textContent = `${state.wordIndex + 1} / ${list.length}`;
+  if (cardEl) {
+    cardEl.classList.remove('is-flipped');
+    cardEl.setAttribute('aria-pressed', 'false');
+  }
+}
+
+// --- 🏆 לוח תחרות הניקוד בין הכיתות ---
+
+function getSortedClassStandings(mode) {
+  const activeDayId = getCurrentCompetitionDayId();
+
+  return CONFIG.classes
+    .map((cls) => {
+      const entry = state.classScores[cls] || { total: 0, byDay: {} };
+      const score = mode === 'today' ? Number(entry.byDay?.[activeDayId]) || 0 : Number(entry.total) || 0;
+      return { className: cls, score };
+    })
+    .sort((a, b) => b.score - a.score || a.className.localeCompare(b.className, 'he'));
+}
+
+function renderLeaderboard() {
+  const podiumEl = document.getElementById('podium-grid');
+  const listEl = document.getElementById('rankings-list');
+  const todayTabBtn = document.getElementById('tab-today-scores');
+  const weeklyTabBtn = document.getElementById('tab-weekly-scores');
+  if (!podiumEl || !listEl) return;
+
+  const activeDayId = getCurrentCompetitionDayId();
+  const activeDayLabel = CONFIG.riddles.find((r) => r.id === activeDayId)?.dayLabel || "יום א'";
+  if (todayTabBtn) {
+    todayTabBtn.textContent = `ניקוד היום (${activeDayLabel})`;
+    todayTabBtn.classList.toggle('is-active', state.leaderboardTab === 'today');
+    todayTabBtn.setAttribute('aria-selected', String(state.leaderboardTab === 'today'));
+  }
+  if (weeklyTabBtn) {
+    weeklyTabBtn.classList.toggle('is-active', state.leaderboardTab === 'weekly');
+    weeklyTabBtn.setAttribute('aria-selected', String(state.leaderboardTab === 'weekly'));
+  }
+
+  const standings = getSortedClassStandings(state.leaderboardTab);
+  const maxScore = Math.max(10, standings[0]?.score || 0);
+  const medals = ['🥇', '🥈', '🥉'];
+
+  // פודיום 3 הראשונים
+  podiumEl.innerHTML = '';
+  standings.slice(0, 3).forEach((item, idx) => {
+    const isMine = item.className === state.selectedClass;
+    const card = document.createElement('div');
+    card.className = `podium-card podium-card--${idx + 1}`;
+    card.innerHTML = `
+      <div class="podium-card__medal" aria-hidden="true">${medals[idx]}</div>
+      <div class="podium-card__class">כיתה ${item.className}</div>
+      <div class="podium-card__pts">${item.score} נקודות</div>
+      ${isMine ? '<span class="podium-card__mine">הכיתה שלך!</span>' : ''}
+    `;
+    podiumEl.appendChild(card);
+  });
+
+  // רשימת כל הכיתות
+  listEl.innerHTML = '';
+  standings.forEach((item, idx) => {
+    const isMine = item.className === state.selectedClass;
+    const widthPct = item.score > 0 ? Math.max(8, Math.round((item.score / maxScore) * 100)) : 0;
+
+    const row = document.createElement('div');
+    row.className = `rank-row${isMine ? ' is-my-class' : ''}`;
+    row.innerHTML = `
+      <span class="rank-row__pos">${idx + 1}</span>
+      <span class="rank-row__name">${item.className}${isMine ? ' ⭐' : ''}</span>
+      <div class="rank-row__bar" aria-hidden="true">
+        <div class="rank-row__fill" style="width: ${widthPct}%"></div>
+      </div>
+      <span class="rank-row__pts">${item.score} נק'</span>
+    `;
+    listEl.appendChild(row);
+  });
+}
+
+// --- מודאל החידה היומית (כולל רמז, בדיקת כיתה, קונפטי וניקוד אוטומטי) ---
+
+function renderModalClassChips() {
+  const container = document.getElementById('modal-class-chips');
+  if (!container) return;
+  container.innerHTML = '';
+  CONFIG.classes.forEach((cls) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `class-chip${state.selectedClass === cls ? ' is-selected' : ''}`;
+    btn.textContent = cls;
+    btn.addEventListener('click', () => selectStudentClass(cls));
+    container.appendChild(btn);
+  });
+}
 
 function openRiddleModal(riddleId) {
   const riddle = CONFIG.riddles.find((r) => r.id === riddleId);
@@ -584,19 +1262,30 @@ function openRiddleModal(riddleId) {
 
   lastFocusedElement = document.activeElement;
   state.activeRiddleId = riddleId;
+  state.activeRiddleHadWrongAttempt = false;
 
   const modal = document.getElementById('riddle-modal');
+  const iconEl = document.getElementById('modal-day-icon');
   const dayLabel = document.getElementById('modal-day-label');
   const categoryLabel = document.getElementById('modal-category-label');
   const titleEl = document.getElementById('modal-title');
   const emojiEl = document.getElementById('modal-emoji-clue');
+  const hintArea = document.getElementById('modal-hint-area');
+  const hintBtn = document.getElementById('modal-hint-btn');
+  const hintText = document.getElementById('modal-hint-text');
   const optionsEl = document.getElementById('modal-options');
   const feedbackEl = document.getElementById('modal-feedback');
   const dykEl = document.getElementById('modal-dyk');
   const dykTextEl = document.getElementById('modal-dyk-text');
+  const unlockedBadgeEl = document.getElementById('modal-unlocked-badge');
+  const modalClassPrompt = document.getElementById('modal-class-prompt');
 
   if (!modal || !optionsEl) return;
 
+  const solvedEntry = state.solvedMeta[riddle.id];
+  const alreadySolved = Boolean(solvedEntry);
+
+  if (iconEl) iconEl.textContent = riddle.icon;
   dayLabel.textContent = riddle.dayLabel;
   categoryLabel.textContent = riddle.category;
   titleEl.textContent = riddle.question;
@@ -609,9 +1298,30 @@ function openRiddleModal(riddleId) {
     emojiEl.textContent = '';
   }
 
-  const alreadySolved = state.solvedIds.has(riddle.id);
-  optionsEl.innerHTML = '';
+  // תזכורת לבחירת כיתה אם טרם נבחרה והחידה טרם נפתרה
+  if (modalClassPrompt) {
+    if (!alreadySolved && !state.selectedClass) {
+      renderModalClassChips();
+      modalClassPrompt.hidden = false;
+    } else {
+      modalClassPrompt.hidden = true;
+    }
+  }
 
+  // רמז
+  if (hintArea && hintBtn && hintText) {
+    if (riddle.hint && !alreadySolved) {
+      hintArea.hidden = false;
+      hintText.textContent = `💡 רמז: ${riddle.hint}`;
+      hintText.hidden = true;
+      hintBtn.setAttribute('aria-expanded', 'false');
+      hintBtn.textContent = '💡 צריכים רמז קטן?';
+    } else {
+      hintArea.hidden = true;
+    }
+  }
+
+  optionsEl.innerHTML = '';
   riddle.options.forEach((optionText, idx) => {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -624,21 +1334,21 @@ function openRiddleModal(riddleId) {
 
     if (alreadySolved) {
       btn.disabled = true;
-      if (idx === riddle.correctIndex) {
-        btn.classList.add('option-btn--correct');
-      }
+      if (idx === riddle.correctIndex) btn.classList.add('option-btn--correct');
     } else {
       btn.addEventListener('click', () => handleOptionSelect(riddle, idx, btn));
     }
-
     optionsEl.appendChild(btn);
   });
 
   if (alreadySolved) {
     feedbackEl.className = 'feedback-box feedback-box--success';
-    feedbackEl.textContent = 'כל הכבוד! חידה זו כבר נפתרה בהצלחה ונשמרה בהתקדמות שלך.';
+    feedbackEl.textContent = `חידה זו כבר נפתרה בהצלחה! (+${solvedEntry.points} נקודות${
+      solvedEntry.className ? ` לכיתה ${solvedEntry.className}` : ''
+    })`;
     feedbackEl.hidden = false;
     dykTextEl.textContent = riddle.didYouKnow;
+    if (unlockedBadgeEl) unlockedBadgeEl.textContent = `🏅 תג פתוח: ${riddle.badgeName}`;
     dykEl.hidden = false;
   } else {
     feedbackEl.hidden = true;
@@ -659,38 +1369,76 @@ function handleOptionSelect(riddle, chosenIndex, clickedBtn) {
   const feedbackEl = document.getElementById('modal-feedback');
   const dykEl = document.getElementById('modal-dyk');
   const dykTextEl = document.getElementById('modal-dyk-text');
+  const unlockedBadgeEl = document.getElementById('modal-unlocked-badge');
+  const hintArea = document.getElementById('modal-hint-area');
+  const modalClassPrompt = document.getElementById('modal-class-prompt');
+
+  // אם התלמיד עדיין לא בחר כיתה — מבקשים בחירה זריזה לפני קבלת הניקוד כדי שהכיתה לא תפסיד נקודות!
+  if (!state.selectedClass && chosenIndex === riddle.correctIndex && modalClassPrompt) {
+    renderModalClassChips();
+    modalClassPrompt.hidden = false;
+    modalClassPrompt.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    showToast('רגע לפני הנקודות — בחרו את הכיתה שלכם למעלה כדי שהניקוד ייזקף לה! 🏫');
+    return;
+  }
 
   if (chosenIndex === riddle.correctIndex) {
-    // תשובה נכונה
     const allButtons = optionsEl.querySelectorAll('.option-btn');
     allButtons.forEach((b) => {
       b.disabled = true;
       b.classList.remove('option-btn--wrong');
     });
     clickedBtn.classList.add('option-btn--correct');
+    if (hintArea) hintArea.hidden = true;
+    if (modalClassPrompt) modalClassPrompt.hidden = true;
+
+    const earnedPoints = state.activeRiddleHadWrongAttempt
+      ? CONFIG.pointsPerRiddle
+      : CONFIG.pointsPerRiddle + CONFIG.firstTryBonus;
+    const praise = PRAISE_PHRASES[Math.floor(Math.random() * PRAISE_PHRASES.length)];
+    const bonusNote = state.activeRiddleHadWrongAttempt ? '' : ' (כולל +2 בונוס לניסיון ראשון!)';
 
     feedbackEl.className = 'feedback-box feedback-box--success';
-    feedbackEl.textContent = 'כל הכבוד! תשובה מדויקת — החידה סומנה כהושלמה.';
+    feedbackEl.textContent = `${praise} +${earnedPoints} נקודות נוספו אוטומטית לכיתה ${state.selectedClass}${bonusNote}`;
     feedbackEl.hidden = false;
 
     dykTextEl.textContent = riddle.didYouKnow;
+    if (unlockedBadgeEl) unlockedBadgeEl.textContent = `🏅 זכית במדבקה: ${riddle.badgeName}`;
     dykEl.hidden = false;
     dykEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-    state.solvedIds.add(riddle.id);
-    saveSolvedToStorage();
+    state.solvedMeta[riddle.id] = {
+      points: earnedPoints,
+      className: state.selectedClass,
+      solvedAt: new Date().toISOString(),
+    };
+    saveLocalState();
+
+    // שליחת ניקוד אוטומטית לכיתה (מקומי + Firebase / Google Sheets)
+    recordClassPoints({
+      className: state.selectedClass,
+      riddleId: riddle.id,
+      points: earnedPoints,
+      studentName: state.certProfile.name,
+    });
+
+    playChime('success');
+    launchConfetti();
     renderProgressSummary();
     renderRoadmap();
+    renderBadgesShelf();
+    renderClassPicker();
+    updateMascotSpeech();
     updateCertificatePreview();
   } else {
-    // תשובה שגויה — מאפשרים לנסות שוב
+    state.activeRiddleHadWrongAttempt = true;
     clickedBtn.classList.remove('option-btn--wrong');
-    // הפעלה מחדש של אנימציית הניענוע
     void clickedBtn.offsetWidth;
     clickedBtn.classList.add('option-btn--wrong');
 
+    playChime('error');
     feedbackEl.className = 'feedback-box feedback-box--error';
-    feedbackEl.textContent = 'לא בדיוק — נסו שוב! חשבו על הקשר למילה או לביטוי.';
+    feedbackEl.textContent = 'אופס, כמעט! נסו שוב — אפשר גם להיעזר בכפתור הרמז למעלה 💡';
     feedbackEl.hidden = false;
   }
 }
@@ -707,7 +1455,108 @@ function closeRiddleModal() {
   }
 }
 
-// --- מתחם יום השיא (לו"ז, משחקים ומחולל תעודה) ---
+// --- מיני-משחק מובנה ליום השיא: שידוך ניבים ---
+
+function shuffleArray(arr) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function resetIdiomMatchGame() {
+  state.matchGame = {
+    selectedIdiomId: null,
+    selectedMeaningId: null,
+    matchedIds: new Set(),
+    shuffledMeanings: shuffleArray(CONFIG.idiomMatchPairs),
+  };
+  const feedbackEl = document.getElementById('match-feedback');
+  if (feedbackEl) feedbackEl.hidden = true;
+  renderIdiomMatchGame();
+}
+
+function renderIdiomMatchGame() {
+  const idiomsCol = document.getElementById('match-idioms-col');
+  const meaningsCol = document.getElementById('match-meanings-col');
+  const scorePill = document.getElementById('match-score-pill');
+  if (!idiomsCol || !meaningsCol) return;
+
+  const { selectedIdiomId, selectedMeaningId, matchedIds, shuffledMeanings } = state.matchGame;
+  if (scorePill) {
+    scorePill.textContent = `זוגות שנמצאו: ${matchedIds.size} / ${CONFIG.idiomMatchPairs.length}`;
+  }
+
+  idiomsCol.innerHTML = '';
+  CONFIG.idiomMatchPairs.forEach((pair) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    const matched = matchedIds.has(pair.id);
+    btn.className = `match-tile${matched ? ' is-matched' : ''}${
+      selectedIdiomId === pair.id ? ' is-selected' : ''
+    }`;
+    btn.disabled = matched;
+    btn.textContent = matched ? `✓ ${pair.idiom}` : pair.idiom;
+    btn.addEventListener('click', () => handleMatchClick('idiom', pair.id, btn));
+    idiomsCol.appendChild(btn);
+  });
+
+  meaningsCol.innerHTML = '';
+  shuffledMeanings.forEach((pair) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    const matched = matchedIds.has(pair.id);
+    btn.className = `match-tile${matched ? ' is-matched' : ''}${
+      selectedMeaningId === pair.id ? ' is-selected' : ''
+    }`;
+    btn.disabled = matched;
+    btn.textContent = matched ? `✓ ${pair.meaning}` : pair.meaning;
+    btn.addEventListener('click', () => handleMatchClick('meaning', pair.id, btn));
+    meaningsCol.appendChild(btn);
+  });
+}
+
+function handleMatchClick(side, pairId, clickedEl) {
+  if (side === 'idiom') {
+    state.matchGame.selectedIdiomId = pairId;
+  } else {
+    state.matchGame.selectedMeaningId = pairId;
+  }
+
+  const { selectedIdiomId, selectedMeaningId } = state.matchGame;
+  if (selectedIdiomId !== null && selectedMeaningId !== null) {
+    if (selectedIdiomId === selectedMeaningId) {
+      state.matchGame.matchedIds.add(selectedIdiomId);
+      state.matchGame.selectedIdiomId = null;
+      state.matchGame.selectedMeaningId = null;
+      playChime('success');
+      renderIdiomMatchGame();
+
+      if (state.matchGame.matchedIds.size === CONFIG.idiomMatchPairs.length) {
+        launchConfetti();
+        const feedbackEl = document.getElementById('match-feedback');
+        if (feedbackEl) {
+          feedbackEl.textContent = '🎉 כל הכבוד! שידכתם בהצלחה את כל 6 הניבים העבריים!';
+          feedbackEl.hidden = false;
+        }
+      }
+    } else {
+      playChime('error');
+      clickedEl.classList.add('is-wrong');
+      setTimeout(() => {
+        state.matchGame.selectedIdiomId = null;
+        state.matchGame.selectedMeaningId = null;
+        renderIdiomMatchGame();
+      }, 360);
+    }
+  } else {
+    renderIdiomMatchGame();
+  }
+}
+
+// --- מתחם יום השיא ---
 
 function renderPeakDaySection() {
   const unlocked = isDayUnlocked(6);
@@ -720,11 +1569,14 @@ function renderPeakDaySection() {
 
   if (!unlocked && lockedDesc) {
     const peakDate = formatFullHebrewDate(parseLocalDate(CONFIG.dayDates[6]));
-    lockedDesc.textContent = `המתחם ייפתח אוטומטית ב${peakDate}. בינתיים המשיכו לפתור את החידות היומיות כדי לצבור נקודות לתעודת אלוף/ת העברית!`;
+    lockedDesc.textContent = `המתחם ייפתח אוטומטית ב${peakDate}. בינתיים המשיכו לפתור חידות, לאסוף מדבקות ולצבור נקודות לכיתה!`;
   }
 
   renderScheduleList();
   renderGamesList();
+  if (!state.matchGame.shuffledMeanings.length) {
+    resetIdiomMatchGame();
+  }
   updateCertificatePreview();
 }
 
@@ -764,25 +1616,19 @@ function renderGamesList() {
         <h4 class="game-card__title">${game.title}</h4>
         <p class="game-card__desc">${game.description}</p>
       </div>
-      <span class="game-card__action">
-        <span>לפתיחה</span>
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-          <polyline points="15 3 21 3 21 9"></polyline>
-          <line x1="10" y1="14" x2="21" y2="3"></line>
-        </svg>
-      </span>
+      <span class="game-card__action">לפתיחה ↗</span>
     `;
     listEl.appendChild(a);
   });
 }
 
-// --- מחולל התעודה ---
+// --- מחולל תעודת אלוף/ת העברית (תצוגה חיה + PDF + PNG) ---
 
 function getCertificateCopy() {
   const isMale = state.certProfile.gender === 'male';
   const total = CONFIG.riddles.length;
-  const solved = state.solvedIds.size;
+  const solved = getSolvedCount();
+  const earnedPts = getMyEarnedPoints();
   const trimmedName = state.certProfile.name.trim();
   const trimmedClass = state.certProfile.className.trim();
 
@@ -792,8 +1638,9 @@ function getCertificateCopy() {
     : 'מוענקת בזאת בהערכה רבה לתלמידה';
 
   const solvedVerb = isMale ? 'ופתר' : 'ופתרה';
-  const body = `על השתתפות פעילה ומעוררת השראה בשבוע השפה העברית, במהלכו גילה/תה סקרנות, יצירתיות ואהבת השפה ${solvedVerb} ${solved} מתוך ${total} חידות השבוע.`
-    .replace('גילה/תה', isMale ? 'גילה' : 'גילתה');
+  const showedVerb = isMale ? 'גילה' : 'גילתה';
+  const ptsClause = earnedPts > 0 ? ` וצבר${isMale ? '' : 'ה'} ${earnedPts} נקודות לכיתה` : '';
+  const body = `על השתתפות פעילה ומעוררת השראה בשבוע השפה העברית, במהלכו ${showedVerb} סקרנות, יצירתיות ואהבת השפה, ${solvedVerb} ${solved} מתוך ${total} חידות השבוע${ptsClause}.`;
 
   let rank = '';
   if (solved >= total) {
@@ -822,6 +1669,7 @@ function getCertificateCopy() {
     rank,
     solved,
     total,
+    earnedPts,
     dateText: todayDateText,
   };
 }
@@ -852,10 +1700,11 @@ function updateCertificatePreview() {
   if (rankEl) rankEl.textContent = copy.rank;
   if (sigEl) sigEl.textContent = CONFIG.certificateSignature;
   if (dateEl) dateEl.textContent = copy.dateText;
-  if (formScoreEl) formScoreEl.textContent = `${copy.solved} מתוך ${copy.total} חידות`;
+  if (formScoreEl) {
+    formScoreEl.textContent = `${copy.solved} מתוך ${copy.total} חידות · ${copy.earnedPts} נקודות לכיתה`;
+  }
 }
 
-// פונקציית עזר לשבירת שורות נקייה על Canvas בעברית
 function drawWrappedText(ctx, text, centerX, startY, maxWidth, lineHeight) {
   const words = text.split(' ');
   const lines = [];
@@ -879,7 +1728,6 @@ function drawWrappedText(ctx, text, centerX, startY, maxWidth, lineHeight) {
   return startY + lines.length * lineHeight;
 }
 
-// יצירת קובץ PNG איכותי ברזולוציה גבוהה (A4 לרוחב: 1600x1131) והורדה ישירה
 async function downloadCertificatePng() {
   const copy = getCertificateCopy();
   if (!copy.hasRealName) {
@@ -893,7 +1741,7 @@ async function downloadCertificatePng() {
     try {
       await document.fonts.ready;
     } catch {
-      // ממשיכים גם אם בדיקת הפונטים נדחתה
+      // ממשיכים גם ללא טעינת פונט מלאה
     }
   }
 
@@ -909,16 +1757,14 @@ async function downloadCertificatePng() {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  // רקע נייר עדין
   const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
   bgGrad.addColorStop(0, '#fffdf9');
   bgGrad.addColorStop(0.65, '#ffffff');
-  bgGrad.addColorStop(1, '#f4f8fc');
+  bgGrad.addColorStop(1, '#f3f8ff');
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, width, height);
 
-  // עיטורי פינה מינימליסטיים בתכלת רך
-  ctx.fillStyle = 'rgba(14, 165, 233, 0.06)';
+  ctx.fillStyle = 'rgba(14, 165, 233, 0.065)';
   ctx.beginPath();
   ctx.arc(0, 0, 260, 0, Math.PI * 2);
   ctx.fill();
@@ -926,27 +1772,23 @@ async function downloadCertificatePng() {
   ctx.arc(width, height, 280, 0, Math.PI * 2);
   ctx.fill();
 
-  // מסגרת חיצונית כחול עמוק
   ctx.strokeStyle = '#0e2a47';
   ctx.lineWidth = 10;
   ctx.strokeRect(48, 48, width - 96, height - 96);
 
-  // מסגרת פנימית צהוב-חרדל
-  ctx.strokeStyle = '#e2a81d';
+  ctx.strokeStyle = '#eab308';
   ctx.lineWidth = 3.5;
   ctx.strokeRect(70, 70, width - 140, height - 140);
 
-  // פינות חרדל מעודנות
   const cornerLen = 36;
   ctx.strokeStyle = '#0e2a47';
   ctx.lineWidth = 5;
-  const corners = [
+  [
     [82, 82, 1, 1],
     [width - 82, 82, -1, 1],
     [82, height - 82, 1, -1],
     [width - 82, height - 82, -1, -1],
-  ];
-  corners.forEach(([cx, cy, dx, dy]) => {
+  ].forEach(([cx, cy, dx, dy]) => {
     ctx.beginPath();
     ctx.moveTo(cx, cy + dy * cornerLen);
     ctx.lineTo(cx, cy);
@@ -954,7 +1796,6 @@ async function downloadCertificatePng() {
     ctx.stroke();
   });
 
-  // סמל עגול עם האות ע'
   const emblemX = width / 2;
   const emblemY = 175;
   ctx.beginPath();
@@ -977,82 +1818,70 @@ async function downloadCertificatePng() {
   ctx.font = '900 56px "Frank Ruhl Libre", Georgia, serif';
   ctx.fillText('ע', emblemX, emblemY + 5);
 
-  // שורת בית ספר
   ctx.fillStyle = '#0284c7';
   ctx.font = '700 28px "Heebo", sans-serif';
   ctx.fillText(CONFIG.certificateSchoolLine, width / 2, 272);
 
-  // כותרת התעודה
   ctx.fillStyle = '#0e2a47';
   ctx.font = '900 84px "Frank Ruhl Libre", Georgia, serif';
   ctx.fillText(copy.title, width / 2, 365);
 
-  // שורת פתיחה
-  ctx.fillStyle = '#465a70';
+  ctx.fillStyle = '#43586f';
   ctx.font = '600 32px "Assistant", sans-serif';
-  ctx.fillText(copy.awardedTo, width / 2, 450);
+  ctx.fillText(copy.awardedTo, width / 2, 448);
 
-  // שם התלמיד/ה + קו חרדל מתחת
   ctx.fillStyle = '#0e2a47';
   ctx.font = '900 66px "Heebo", sans-serif';
-  ctx.fillText(copy.displayName, width / 2, 540);
+  ctx.fillText(copy.displayName, width / 2, 536);
 
   const nameWidth = Math.max(460, Math.min(920, ctx.measureText(copy.displayName).width + 120));
-  ctx.strokeStyle = '#e2a81d';
+  ctx.strokeStyle = '#eab308';
   ctx.lineWidth = 5;
   ctx.beginPath();
-  ctx.moveTo(width / 2 - nameWidth / 2, 592);
-  ctx.lineTo(width / 2 + nameWidth / 2, 592);
+  ctx.moveTo(width / 2 - nameWidth / 2, 588);
+  ctx.lineTo(width / 2 + nameWidth / 2, 588);
   ctx.stroke();
 
-  let nextY = 640;
+  let nextY = 660;
   if (copy.classLabel) {
-    ctx.fillStyle = '#6e8094';
+    ctx.fillStyle = '#6b7f96';
     ctx.font = '700 30px "Heebo", sans-serif';
-    ctx.fillText(copy.classLabel, width / 2, 632);
-    nextY = 695;
-  } else {
-    nextY = 665;
+    ctx.fillText(copy.classLabel, width / 2, 628);
+    nextY = 690;
   }
 
-  // פסקת הוקרה
   ctx.fillStyle = '#334155';
-  ctx.font = '600 31px "Assistant", sans-serif';
-  const afterBodyY = drawWrappedText(ctx, copy.body, width / 2, nextY, 1100, 48);
+  ctx.font = '600 30px "Assistant", sans-serif';
+  const afterBodyY = drawWrappedText(ctx, copy.body, width / 2, nextY, 1120, 46);
 
-  // תגית דרגה
-  const badgeY = Math.min(865, afterBodyY + 42);
+  const badgeY = Math.min(870, afterBodyY + 42);
   ctx.font = '800 28px "Heebo", sans-serif';
   const rankTextWidth = ctx.measureText(copy.rank).width;
   const pillW = rankTextWidth + 72;
   const pillH = 54;
-  const pillX = width / 2 - pillW / 2;
-  const pillY = badgeY - pillH / 2;
-
   ctx.fillStyle = '#fef5d4';
   ctx.beginPath();
-  ctx.roundRect(pillX, pillY, pillW, pillH, 27);
+  ctx.roundRect(width / 2 - pillW / 2, badgeY - pillH / 2, pillW, pillH, 27);
   ctx.fill();
-  ctx.strokeStyle = '#e2a81d';
+  ctx.strokeStyle = '#eab308';
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  ctx.fillStyle = '#a6750c';
+  ctx.fillStyle = '#9a6b08';
   ctx.fillText(copy.rank, width / 2, badgeY + 2);
 
-  // שורת חתימות ותאריך בתחתית
-  const footerY = 985;
+  const footerY = 988;
   const rightSigX = width - 340;
   const leftSigX = 340;
 
-  ctx.strokeStyle = '#163a5f';
+  ctx.strokeStyle = '#17416c';
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(rightSigX - 135, footerY - 12);
   ctx.lineTo(rightSigX + 135, footerY - 12);
   ctx.stroke();
 
-  ctx.fillStyle = '#6e8094';
+  ctx.fillStyle = '#6b7f96';
   ctx.font = '600 24px "Heebo", sans-serif';
   ctx.fillText(CONFIG.certificateSignature, rightSigX, footerY + 20);
 
@@ -1065,12 +1894,14 @@ async function downloadCertificatePng() {
   ctx.lineTo(leftSigX + 115, footerY - 12);
   ctx.stroke();
 
-  ctx.fillStyle = '#6e8094';
+  ctx.fillStyle = '#6b7f96';
   ctx.font = '600 24px "Heebo", sans-serif';
   ctx.fillText('תאריך', leftSigX, footerY + 20);
 
-  // הורדת הקובץ
-  const safeName = copy.displayName.replace(/[^\u0590-\u05FFa-zA-Z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+  const safeName = copy.displayName
+    .replace(/[^\u0590-\u05FFa-zA-Z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
   const link = document.createElement('a');
   link.download = `תעודת-שבוע-השפה-העברית-${safeName || 'אישית'}.png`;
   link.href = canvas.toDataURL('image/png');
@@ -1078,7 +1909,7 @@ async function downloadCertificatePng() {
   link.click();
   document.body.removeChild(link);
 
-  showToast('התעודה ירדה למחשב/טלפון בהצלחה!');
+  showToast('התעודה ירדה בהצלחה! 🎉');
 }
 
 function handlePrintCertificate() {
@@ -1092,16 +1923,132 @@ function handlePrintCertificate() {
   window.print();
 }
 
-// --- מצב בדיקה למורה ואיפוס התקדמות ---
+// --- לוח דוח ניקוד למורה (טבלה יומית, ייצוא CSV ל-Excel והעתקת סיכום יומי) ---
+
+function renderTeacherReportTable() {
+  const tbody = document.getElementById('teacher-report-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const rows = CONFIG.classes
+    .map((cls) => ({
+      cls,
+      data: state.classScores[cls] || { total: 0, byDay: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 } },
+    }))
+    .sort((a, b) => b.data.total - a.data.total || a.cls.localeCompare(b.cls, 'he'));
+
+  rows.forEach(({ cls, data }) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>כיתה ${cls}</td>
+      <td>${data.byDay[1] || 0}</td>
+      <td>${data.byDay[2] || 0}</td>
+      <td>${data.byDay[3] || 0}</td>
+      <td>${data.byDay[4] || 0}</td>
+      <td>${data.byDay[5] || 0}</td>
+      <td>${data.byDay[6] || 0}</td>
+      <td class="teacher-table__total">${data.total || 0}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function exportTeacherCsv() {
+  const header = ['כיתה', "יום א'", "יום ב'", "יום ג'", "יום ד'", "יום ה'", "יום ו'", 'סה"כ נקודות'];
+  const lines = [header.join(',')];
+
+  const rows = CONFIG.classes
+    .map((cls) => ({
+      cls,
+      data: state.classScores[cls] || { total: 0, byDay: {} },
+    }))
+    .sort((a, b) => b.data.total - a.data.total);
+
+  rows.forEach(({ cls, data }) => {
+    lines.push(
+      [
+        `"כיתה ${cls}"`,
+        data.byDay[1] || 0,
+        data.byDay[2] || 0,
+        data.byDay[3] || 0,
+        data.byDay[4] || 0,
+        data.byDay[5] || 0,
+        data.byDay[6] || 0,
+        data.total || 0,
+      ].join(',')
+    );
+  });
+
+  // הוספת BOM כדי ש-Excel יפתח את העברית בצורה תקינה לחלוטין
+  const blob = new Blob([`\uFEFF${lines.join('\n')}`], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `דוח-ניקוד-שבוע-השפה-העברית-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('דוח הניקוד ירד כקובץ Excel/CSV בהצלחה! 📊');
+}
+
+async function copyDailySummaryForTeacher() {
+  const activeDayId = getCurrentCompetitionDayId();
+  const activeDayLabel = CONFIG.riddles.find((r) => r.id === activeDayId)?.dayLabel || "יום א'";
+  const todayStandings = getSortedClassStandings('today');
+  const weeklyStandings = getSortedClassStandings('weekly');
+
+  const lines = [
+    `🏆 סיכום ניקוד שבוע השפה העברית (${activeDayLabel} · ${new Date().toLocaleDateString('he-IL')})`,
+    '',
+    `📌 מובילות היום (${activeDayLabel}):`,
+    ...todayStandings.map((s, i) => `${i + 1}. כיתה ${s.className} — ${s.score} נקודות`),
+    '',
+    '🌟 טבלה מצטברת לשבוע:',
+    ...weeklyStandings.map((s, i) => `${i + 1}. כיתה ${s.className} — ${s.score} נקודות`),
+  ];
+
+  const text = lines.join('\n');
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast('הסיכום היומי הועתק! אפשר להדביק ישירות במייל או בוואטסאפ 📋');
+  } catch {
+    showToast('לא ניתן להעתיק אוטומטית בדפדפן זה — ניתן להוריד CSV במקום.');
+  }
+}
+
+function addDemoClassScores() {
+  const activeDayId = getCurrentCompetitionDayId();
+  CONFIG.classes.forEach((cls) => {
+    const entry = ensureClassEntry(cls);
+    const todayPts = (Math.floor(Math.random() * 8) + 2) * 10;
+    const prevPts = (Math.floor(Math.random() * 12) + 4) * 10;
+    entry.byDay[activeDayId] = (entry.byDay[activeDayId] || 0) + todayPts;
+    const prevDay = activeDayId > 1 ? activeDayId - 1 : 1;
+    if (prevDay !== activeDayId) {
+      entry.byDay[prevDay] = (entry.byDay[prevDay] || 0) + prevPts;
+    }
+    entry.total = Object.values(entry.byDay).reduce((a, b) => a + b, 0);
+  });
+  saveLocalState();
+  renderLeaderboard();
+  renderTeacherReportTable();
+  showToast('נוספו נקודות דמה לבדיקת לוח התחרות והדוח! 🎲');
+}
+
+// --- מצב בדיקה למורה ואיפוס ---
 
 function setTeacherMode(enabled) {
   state.teacherMode = enabled;
+  if (!enabled) state.teacherReportOpen = false;
 
   const banner = document.getElementById('teacher-banner');
+  const drawer = document.getElementById('teacher-report-drawer');
   const footerBtn = document.getElementById('teacher-mode-btn');
   const footerResetBtn = document.getElementById('footer-reset-btn');
 
   if (banner) banner.hidden = !enabled;
+  if (drawer) drawer.hidden = !enabled || !state.teacherReportOpen;
   if (footerBtn) {
     footerBtn.setAttribute('aria-pressed', String(enabled));
     footerBtn.textContent = enabled ? 'מצב בדיקה למורה (פעיל)' : 'מצב בדיקה למורה';
@@ -1110,48 +2057,90 @@ function setTeacherMode(enabled) {
 
   renderRoadmap();
   renderPeakDaySection();
+  renderTeacherReportTable();
 
   showToast(
     enabled
-      ? 'מצב בדיקה למורה הופעל — כל 7 הימים ומתחם יום השיא פתוחים.'
+      ? 'מצב בדיקה למורה הופעל — כל 7 הימים ולוח דוחות הניקוד פתוחים.'
       : 'חזרה למצב רגיל לפי תאריכי הפתיחה.'
   );
 }
 
+function toggleTeacherReport(open) {
+  state.teacherReportOpen = open;
+  const drawer = document.getElementById('teacher-report-drawer');
+  if (drawer) {
+    drawer.hidden = !open;
+    if (open) {
+      renderTeacherReportTable();
+      drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+}
+
 function resetProgressForTesting() {
-  state.solvedIds.clear();
+  state.solvedMeta = {};
+  state.selectedClass = '';
+  state.classScores = createEmptyScoresMap();
   state.certProfile = { name: '', className: '', gender: 'female' };
 
   try {
-    localStorage.removeItem(STORAGE_KEYS.SOLVED);
-    localStorage.removeItem(STORAGE_KEYS.CERT_PROFILE);
+    Object.values(STORAGE_KEYS).forEach((key) => {
+      if (key !== STORAGE_KEYS.SOUND_ENABLED) localStorage.removeItem(key);
+    });
   } catch {
     // התעלמות שקטה
   }
 
-  // איפוס שדות הטופס של התעודה
   const nameInput = document.getElementById('student-name-input');
   const classInput = document.getElementById('student-class-input');
   const femaleRadio = document.querySelector('input[name="cert-gender"][value="female"]');
-
   if (nameInput) nameInput.value = '';
   if (classInput) classInput.value = '';
   if (femaleRadio) femaleRadio.checked = true;
 
   closeRiddleModal();
+  renderClassPicker();
   renderProgressSummary();
   renderRoadmap();
+  renderBadgesShelf();
+  renderLeaderboard();
+  renderTeacherReportTable();
+  resetIdiomMatchGame();
+  updateMascotSpeech();
   updateCertificatePreview();
-  showToast('ההתקדמות אופסה בהצלחה לבדיקה מחדש.');
+  showToast('ההתקדמות והניקוד המקומי אופסו בהצלחה לבדיקה מחדש.');
 }
 
 // --- חיבור אירועים ואתחול ---
 
 function bindEvents() {
-  // מודאל
+  // מתג צלילים
+  const soundBtn = document.getElementById('sound-toggle-btn');
+  if (soundBtn) {
+    soundBtn.addEventListener('click', () => {
+      state.soundEnabled = !state.soundEnabled;
+      saveLocalState();
+      updateSoundButtonUI();
+      if (state.soundEnabled) playChime('success');
+    });
+  }
+
+  // החלפת כיתה בכותרת
+  const changeClassBtn = document.getElementById('change-class-btn');
+  if (changeClassBtn) {
+    changeClassBtn.addEventListener('click', () => {
+      const chipsEl = document.getElementById('hero-class-chips');
+      if (chipsEl) chipsEl.hidden = !chipsEl.hidden;
+    });
+  }
+
+  // מודאל חידה ורמז
   const modal = document.getElementById('riddle-modal');
   const closeBtn = document.getElementById('modal-close-btn');
   const doneBtn = document.getElementById('modal-done-btn');
+  const hintBtn = document.getElementById('modal-hint-btn');
+  const hintText = document.getElementById('modal-hint-text');
 
   if (closeBtn) closeBtn.addEventListener('click', closeRiddleModal);
   if (doneBtn) doneBtn.addEventListener('click', closeRiddleModal);
@@ -1160,10 +2149,62 @@ function bindEvents() {
       if (event.target === modal) closeRiddleModal();
     });
   }
-
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') closeRiddleModal();
   });
+
+  if (hintBtn && hintText) {
+    hintBtn.addEventListener('click', () => {
+      const willShow = hintText.hidden;
+      hintText.hidden = !willShow;
+      hintBtn.setAttribute('aria-expanded', String(willShow));
+      hintBtn.textContent = willShow ? '💡 הסתרת הרמז' : '💡 צריכים רמז קטן?';
+    });
+  }
+
+  // כרטיסיית מילת היום מתהפכת
+  const flipCard = document.getElementById('word-flip-card');
+  const prevWordBtn = document.getElementById('word-prev-btn');
+  const nextWordBtn = document.getElementById('word-next-btn');
+
+  if (flipCard) {
+    flipCard.addEventListener('click', () => {
+      const flipped = flipCard.classList.toggle('is-flipped');
+      flipCard.setAttribute('aria-pressed', String(flipped));
+    });
+  }
+  if (prevWordBtn) {
+    prevWordBtn.addEventListener('click', () => {
+      state.wordIndex = (state.wordIndex - 1 + CONFIG.wordsOfTheDay.length) % CONFIG.wordsOfTheDay.length;
+      renderWordOfTheDay();
+    });
+  }
+  if (nextWordBtn) {
+    nextWordBtn.addEventListener('click', () => {
+      state.wordIndex = (state.wordIndex + 1) % CONFIG.wordsOfTheDay.length;
+      renderWordOfTheDay();
+    });
+  }
+
+  // טאבים בלוח התחרות בין הכיתות
+  const todayTabBtn = document.getElementById('tab-today-scores');
+  const weeklyTabBtn = document.getElementById('tab-weekly-scores');
+  if (todayTabBtn) {
+    todayTabBtn.addEventListener('click', () => {
+      state.leaderboardTab = 'today';
+      renderLeaderboard();
+    });
+  }
+  if (weeklyTabBtn) {
+    weeklyTabBtn.addEventListener('click', () => {
+      state.leaderboardTab = 'weekly';
+      renderLeaderboard();
+    });
+  }
+
+  // משחק שידוך ניבים
+  const matchResetBtn = document.getElementById('match-reset-btn');
+  if (matchResetBtn) matchResetBtn.addEventListener('click', resetIdiomMatchGame);
 
   // טופס תעודה
   const nameInput = document.getElementById('student-name-input');
@@ -1176,26 +2217,24 @@ function bindEvents() {
     nameInput.value = state.certProfile.name;
     nameInput.addEventListener('input', (e) => {
       state.certProfile.name = e.target.value;
-      saveProfileToStorage();
+      saveLocalState();
       updateCertificatePreview();
     });
   }
-
   if (classInput) {
     classInput.value = state.certProfile.className;
     classInput.addEventListener('input', (e) => {
       state.certProfile.className = e.target.value;
-      saveProfileToStorage();
+      saveLocalState();
       updateCertificatePreview();
     });
   }
-
   genderRadios.forEach((radio) => {
     radio.checked = radio.value === state.certProfile.gender;
     radio.addEventListener('change', (e) => {
       if (e.target.checked) {
         state.certProfile.gender = e.target.value;
-        saveProfileToStorage();
+        saveLocalState();
         updateCertificatePreview();
       }
     });
@@ -1204,37 +2243,51 @@ function bindEvents() {
   if (pngBtn) pngBtn.addEventListener('click', downloadCertificatePng);
   if (printBtn) printBtn.addEventListener('click', handlePrintCertificate);
 
-  // מצב בדיקה למורה ואיפוס
+  // כפתורי מצב מורה ודוח ניקוד
   const teacherModeBtn = document.getElementById('teacher-mode-btn');
   const bannerExitBtn = document.getElementById('banner-exit-btn');
   const bannerResetBtn = document.getElementById('banner-reset-btn');
   const footerResetBtn = document.getElementById('footer-reset-btn');
+  const bannerReportBtn = document.getElementById('banner-report-btn');
+  const closeReportBtn = document.getElementById('close-report-btn');
+  const bannerDemoBtn = document.getElementById('banner-demo-btn');
+  const exportCsvBtn = document.getElementById('export-csv-btn');
+  const copySummaryBtn = document.getElementById('copy-daily-summary-btn');
 
-  if (teacherModeBtn) {
-    teacherModeBtn.addEventListener('click', () => setTeacherMode(!state.teacherMode));
+  if (teacherModeBtn) teacherModeBtn.addEventListener('click', () => setTeacherMode(!state.teacherMode));
+  if (bannerExitBtn) bannerExitBtn.addEventListener('click', () => setTeacherMode(false));
+  if (bannerResetBtn) bannerResetBtn.addEventListener('click', resetProgressForTesting);
+  if (footerResetBtn) footerResetBtn.addEventListener('click', resetProgressForTesting);
+  if (bannerReportBtn) {
+    bannerReportBtn.addEventListener('click', () => toggleTeacherReport(!state.teacherReportOpen));
   }
-  if (bannerExitBtn) {
-    bannerExitBtn.addEventListener('click', () => setTeacherMode(false));
-  }
-  if (bannerResetBtn) {
-    bannerResetBtn.addEventListener('click', resetProgressForTesting);
-  }
-  if (footerResetBtn) {
-    footerResetBtn.addEventListener('click', resetProgressForTesting);
-  }
+  if (closeReportBtn) closeReportBtn.addEventListener('click', () => toggleTeacherReport(false));
+  if (bannerDemoBtn) bannerDemoBtn.addEventListener('click', addDemoClassScores);
+  if (exportCsvBtn) exportCsvBtn.addEventListener('click', exportTeacherCsv);
+  if (copySummaryBtn) copySummaryBtn.addEventListener('click', copyDailySummaryForTeacher);
 }
 
 function initApp() {
   loadStateFromStorage();
 
+  // מילת היום מתחילה אוטומטית לפי היום הנוכחי של השבוע
+  state.wordIndex = (getCurrentCompetitionDayId() - 1) % CONFIG.wordsOfTheDay.length;
+
   const eyebrow = document.getElementById('school-eyebrow');
   if (eyebrow) eyebrow.textContent = CONFIG.schoolSubtitle;
 
+  updateSoundButtonUI();
   bindEvents();
   initCountdown();
+  renderClassPicker();
   renderProgressSummary();
   renderRoadmap();
+  renderBadgesShelf();
+  renderWordOfTheDay();
+  renderLeaderboard();
   renderPeakDaySection();
+  updateMascotSpeech();
+  initCloudSync();
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
