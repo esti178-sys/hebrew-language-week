@@ -2897,17 +2897,338 @@ input {
 }
 
 /* ==========================================================================
+   שדרוגים: שיתוף וואטסאפ, ספירת פותרים, המצאת מילה, מסך הקרנה ללוח וכרזת QR
+   ========================================================================== */
+.modal-dialog__footer--spread {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.btn--whatsapp {
+  background-color: #16a34a;
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.24);
+}
+
+.btn--whatsapp:hover {
+  background-color: #15803d;
+}
+
+.podium-card__solves {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.rank-row__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+
+.rank-row__solves {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* אתגר המצאת מילה חדשה לבית ספר הראל */
+.invent-word-panel {
+  margin-bottom: 1.5rem;
+  border-color: var(--mustard-400);
+  background: linear-gradient(180deg, #fffdf6 0%, #ffffff 100%);
+}
+
+.invent-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.invent-form__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 0.9rem;
+}
+
+.invent-form__actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.invent-success {
+  padding: 1rem 1.2rem;
+  border-radius: 16px;
+  background-color: var(--success-100);
+  border: 1.5px solid #86efac;
+  color: var(--success-700);
+}
+
+.invent-success strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.invent-success p {
+  font-size: 0.92rem;
+  color: var(--navy-900);
+}
+
+/* מסך הקרנה מלא ללוח כיתה / טלוויזיה במסדרון */
+.board-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  overflow-y: auto;
+  background: linear-gradient(145deg, #07192e 0%, #0e2a47 55%, #0c4d7a 100%);
+  color: #ffffff;
+  padding: 1.5rem 2rem 2rem;
+}
+
+.board-overlay__inner {
+  width: min(1360px, 100%);
+  margin-inline: auto;
+}
+
+.board-overlay__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.board-overlay__kicker {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--sky-400);
+  margin-bottom: 0.25rem;
+}
+
+.board-overlay__title {
+  color: #ffffff;
+  font-size: clamp(1.75rem, 3.2vw, 2.55rem);
+  font-weight: 900;
+}
+
+.board-overlay__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tab-switch--dark {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.tab-switch--dark .tab-switch__btn {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.tab-switch--dark .tab-switch__btn.is-active {
+  background-color: var(--mustard-400);
+  color: var(--navy-950);
+}
+
+.board-podium {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.board-podium__card {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 22px;
+  padding: 1.35rem 1rem;
+  text-align: center;
+}
+
+.board-podium__card--1 {
+  background: linear-gradient(180deg, rgba(245, 196, 67, 0.28) 0%, rgba(245, 196, 67, 0.1) 100%);
+  border-color: var(--mustard-400);
+}
+
+.board-podium__medal {
+  font-size: 2.6rem;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+
+.board-podium__class {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.board-podium__pts {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--mustard-400);
+  margin-top: 0.2rem;
+}
+
+.board-podium__solves {
+  font-size: 0.92rem;
+  color: #bae6fd;
+  margin-top: 0.18rem;
+}
+
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.board-row {
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 0.75rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.board-row__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.board-row__name {
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.board-row__pts {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--mustard-400);
+}
+
+.board-row__bar {
+  height: 8px;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+.board-row__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--sky-400) 0%, var(--mustard-400) 100%);
+}
+
+.board-row__sub {
+  font-size: 0.78rem;
+  color: #bae6fd;
+}
+
+/* מודאל כרזת QR להדפסה */
+.modal-dialog--poster {
+  width: min(560px, 100%);
+}
+
+.qr-poster-card {
+  background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 55%, #fffbeb 100%);
+  border: 3px solid var(--navy-900);
+  border-radius: 20px;
+  padding: 1.65rem 1.4rem;
+  text-align: center;
+}
+
+.qr-poster-card__kicker {
+  display: inline-block;
+  background-color: var(--mustard-400);
+  color: var(--navy-950);
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 900;
+  padding: 0.25rem 0.9rem;
+  border-radius: 999px;
+  margin-bottom: 0.6rem;
+}
+
+.qr-poster-card__title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--navy-900);
+  margin-bottom: 0.3rem;
+}
+
+.qr-poster-card__sub {
+  font-size: 0.96rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.15rem;
+}
+
+.qr-poster-card__code {
+  width: 215px;
+  height: 215px;
+  margin: 0 auto 1rem;
+  padding: 10px;
+  background-color: #ffffff;
+  border: 2.5px solid var(--sky-500);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.qr-poster-card__code svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.qr-poster-card__cta {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--navy-900);
+  margin-bottom: 0.35rem;
+}
+
+.qr-poster-card__url {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--sky-600);
+  direction: ltr;
+}
+
+/* ==========================================================================
    רספונסיביות מלאה למובייל וטאבלט
    ========================================================================== */
 @media (max-width: 980px) {
   .hero__inner,
   .extras-grid,
   .peak-two-col,
-  .certificate-studio__layout {
+  .certificate-studio__layout,
+  .invent-form__grid {
     grid-template-columns: 1fr;
   }
 
-  .days-grid {
+  .days-grid,
+  .board-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -2937,7 +3258,9 @@ input {
 
   .days-grid,
   .podium-grid,
-  .match-board {
+  .match-board,
+  .board-podium,
+  .board-grid {
     grid-template-columns: 1fr;
   }
 
@@ -3006,6 +3329,7 @@ input {
   .confetti-canvas,
   .teacher-banner,
   .teacher-report,
+  .board-overlay,
   .hero,
   #roadmap-section,
   #extras-section,
@@ -3015,6 +3339,7 @@ input {
   .peak-two-col,
   .peak-schedule-panel,
   .mini-game-panel,
+  .invent-word-panel,
   .certificate-studio__header,
   .cert-form,
   .site-footer,

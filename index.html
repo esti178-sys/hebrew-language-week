@@ -39,11 +39,17 @@
         <button type="button" id="banner-report-btn" class="btn btn--sky-light btn--sm">
           📊 דוח ניקוד כיתות
         </button>
+        <button type="button" id="banner-board-btn" class="btn btn--ghost-light btn--sm">
+          📺 מסך הקרנה ללוח
+        </button>
+        <button type="button" id="banner-qr-btn" class="btn btn--ghost-light btn--sm">
+          🖨️ כרזת QR להדפסה
+        </button>
         <button type="button" id="banner-demo-btn" class="btn btn--ghost-light btn--sm">
-          הוספת ניקוד דמה
+          ניקוד דמה
         </button>
         <button type="button" id="banner-reset-btn" class="btn btn--ghost-light btn--sm">
-          איפוס התקדמות
+          איפוס
         </button>
         <button type="button" id="banner-exit-btn" class="btn btn--mustard btn--sm">
           יציאה
@@ -88,6 +94,8 @@
                 <th>יום ה'</th>
                 <th>יום ו'</th>
                 <th>סה"כ נקודות</th>
+                <th>מספר פתרונות</th>
+                <th>ממוצע לפתרון</th>
               </tr>
             </thead>
             <tbody id="teacher-report-tbody">
@@ -464,6 +472,70 @@
             <p class="match-feedback" id="match-feedback" hidden role="status" aria-live="polite"></p>
           </div>
 
+          <!-- אתגר יום השיא: ממציאים מילה עברית חדשה לבית ספר הראל -->
+          <div class="panel invent-word-panel" id="invent-word-panel">
+            <div class="panel__head">
+              <span class="panel__emoji" aria-hidden="true">💡</span>
+              <div>
+                <h3 class="panel__title">אתגר יום השיא: ממציאים מילה חדשה לבית ספר הראל!</h3>
+                <p class="panel__sub">
+                  יש תופעה יומיומית בבית הספר שעדיין אין לה מילה בעברית (למשל: הפסקה שנגמרת מהר מדי או לשכוח מחברת בבית)? המציאו לה מילה עברית מקורית — ההמצאות המובחרות יוכרזו בטקס הסיום!
+                </p>
+              </div>
+            </div>
+
+            <form id="invent-word-form" class="invent-form" novalidate>
+              <div class="invent-form__grid">
+                <div class="form-field">
+                  <label for="invent-word-input" class="form-label">המילה החדשה שהמצאתם</label>
+                  <input
+                    type="text"
+                    id="invent-word-input"
+                    class="form-input"
+                    placeholder="לדוגמה: שַׁכְחֶבֶרֶת"
+                    maxlength="32"
+                    required
+                  />
+                </div>
+                <div class="form-field">
+                  <label for="invent-meaning-input" class="form-label">מה פירוש המילה?</label>
+                  <input
+                    type="text"
+                    id="invent-meaning-input"
+                    class="form-input"
+                    placeholder="לדוגמה: הרגע שמגלים שהמחברת נשארה בבית"
+                    maxlength="120"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label for="invent-example-input" class="form-label">
+                  משפט לדוגמה <span class="form-label__opt">(רשות)</span>
+                </label>
+                <input
+                  type="text"
+                  id="invent-example-input"
+                  class="form-input"
+                  placeholder="לדוגמה: הבוקר הייתה לי שַׁכְחֶבֶרֶת רצינית בשיעור מדעים!"
+                  maxlength="140"
+                />
+              </div>
+
+              <div class="invent-form__actions">
+                <button type="submit" id="invent-submit-btn" class="btn btn--primary">
+                  ✨ שליחת ההמצאה לצוות השפה העברית
+                </button>
+              </div>
+            </form>
+
+            <div id="invent-word-success" class="invent-success" hidden role="status" aria-live="polite">
+              <strong id="invent-success-title">המילה שלך נשלחה בהצלחה לצוות השפה העברית של בית ספר הראל! 🏆</strong>
+              <p id="invent-success-preview"></p>
+            </div>
+          </div>
+
           <!-- מחולל תעודת אלוף/ת העברית -->
           <div class="certificate-studio" id="certificate-studio">
             <div class="certificate-studio__header">
@@ -661,7 +733,17 @@
         </div>
       </div>
 
-      <div class="modal-dialog__footer">
+      <div class="modal-dialog__footer modal-dialog__footer--spread">
+        <a
+          id="modal-whatsapp-btn"
+          class="btn btn--whatsapp"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+          hidden
+        >
+          📲 שיתוף ההישג בוואטסאפ הכיתתי
+        </a>
         <button type="button" class="btn btn--secondary" id="modal-done-btn">חזרה למפת המסע</button>
       </div>
     </div>
@@ -704,6 +786,82 @@
           <button type="button" id="pin-modal-cancel-btn" class="btn btn--secondary">ביטול</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- מסך הקרנה ללוח / טלוויזיית מסדרון (שידור חי מ-Firebase) -->
+  <div
+    class="board-overlay"
+    id="board-mode-overlay"
+    hidden
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="board-mode-title"
+  >
+    <div class="board-overlay__inner">
+      <header class="board-overlay__header">
+        <div>
+          <span class="board-overlay__kicker">שבוע השפה העברית · בית ספר הראל · שידור חי</span>
+          <h2 id="board-mode-title" class="board-overlay__title">🏆 אליפות הכיתות בשפה העברית</h2>
+        </div>
+
+        <div class="board-overlay__controls">
+          <div class="tab-switch tab-switch--dark" role="tablist" aria-label="תצוגת לוח בהקרנה">
+            <button type="button" id="board-tab-today" class="tab-switch__btn is-active">ניקוד היום</button>
+            <button type="button" id="board-tab-weekly" class="tab-switch__btn">מצטבר שבועי</button>
+          </div>
+          <button type="button" id="board-close-btn" class="btn btn--mustard btn--sm">
+            יציאה ממסך הקרנה ✕
+          </button>
+        </div>
+      </header>
+
+      <div class="board-podium" id="board-podium"></div>
+      <div class="board-grid" id="board-grid"></div>
+    </div>
+  </div>
+
+  <!-- מודאל כרזת QR מוכנה להדפסה לתלייה בבית ספר הראל -->
+  <div
+    class="modal-backdrop"
+    id="qr-poster-modal"
+    hidden
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="qr-modal-title"
+  >
+    <div class="modal-dialog modal-dialog--poster" role="document">
+      <div class="modal-dialog__top">
+        <h3 id="qr-modal-title" class="panel__title">🖨️ כרזת QR מוכנה להדפסה — בית ספר הראל</h3>
+        <button type="button" class="modal-close" id="qr-modal-close-btn" aria-label="סגירה">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-dialog__body">
+        <div class="qr-poster-card" id="qr-poster-printable">
+          <span class="qr-poster-card__kicker">בית ספר הראל · כיתות ה'–ח'</span>
+          <h4 class="qr-poster-card__title">שבוע השפה העברית</h4>
+          <p class="qr-poster-card__sub">17.12 – 24.12 · 6 חידות יומיות · אליפות 20 הכיתות · יום שיא חגיגי!</p>
+
+          <div class="qr-poster-card__code" id="qr-svg-container" aria-label="קוד QR לסריקה לאתר שבוע השפה העברית">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 41 41" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h41v41H0z"/><path stroke="#0e2a47" d="M4 4.5h7m1 0h1m1 0h1m2 0h3m2 0h1m3 0h3m1 0h7M4 5.5h1m5 0h1m3 0h1m1 0h3m1 0h1m1 0h2m2 0h1m3 0h1m5 0h1M4 6.5h1m1 0h3m1 0h1m2 0h1m1 0h1m2 0h1m2 0h5m1 0h1m2 0h1m1 0h3m1 0h1M4 7.5h1m1 0h3m1 0h1m1 0h1m2 0h1m4 0h2m4 0h2m2 0h1m1 0h3m1 0h1M4 8.5h1m1 0h3m1 0h1m1 0h1m2 0h1m4 0h2m1 0h1m3 0h1m2 0h1m1 0h3m1 0h1M4 9.5h1m5 0h1m1 0h1m3 0h1m2 0h1m2 0h1m1 0h3m3 0h1m5 0h1M4 10.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M12 11.5h1m1 0h1m1 0h1m1 0h1m2 0h5m2 0h1M4 12.5h1m3 0h1m1 0h4m2 0h1m2 0h1m1 0h1m2 0h2m3 0h5m2 0h1M6 13.5h2m1 0h1m1 0h5m2 0h4m3 0h5m3 0h2M4 14.5h3m1 0h4m1 0h3m1 0h3m2 0h1m2 0h1m1 0h2m4 0h1m1 0h1M5 15.5h1m1 0h2m2 0h1m1 0h1m1 0h3m1 0h2m2 0h3m1 0h1m1 0h1m6 0h1M5 16.5h3m2 0h3m1 0h1m2 0h1m1 0h2m3 0h5m1 0h1m1 0h2m1 0h2M7 17.5h2m2 0h2m1 0h1m1 0h3m3 0h6m1 0h1m1 0h1m2 0h1M5 18.5h2m3 0h2m2 0h1m2 0h3m1 0h2m1 0h12M4 19.5h1m4 0h1m3 0h3m1 0h5m1 0h5m1 0h2M5 20.5h2m3 0h2m1 0h3m1 0h2m2 0h1m2 0h2m2 0h1m1 0h1m1 0h1m2 0h1M6 21.5h4m1 0h1m3 0h1m1 0h4m1 0h1m1 0h1m2 0h1m1 0h1m3 0h3M7 22.5h2m1 0h1m2 0h1m2 0h2m1 0h3m2 0h1m2 0h1m1 0h3m1 0h1m1 0h1M7 23.5h1m1 0h1m1 0h2m2 0h4m2 0h3m1 0h1m1 0h2m1 0h2m3 0h1M4 24.5h1m1 0h1m3 0h1m2 0h2m1 0h1m1 0h2m2 0h5m1 0h1m1 0h1m1 0h2m2 0h1M4 25.5h1m1 0h2m1 0h1m2 0h2m1 0h2m3 0h2m2 0h2m1 0h1m1 0h1m1 0h1m1 0h3M7 26.5h1m1 0h2m2 0h1m3 0h2m1 0h2m2 0h2m1 0h3m2 0h1m2 0h1M8 27.5h1m3 0h2m1 0h1m2 0h1m2 0h1m1 0h1m1 0h1m1 0h3m5 0h2M4 28.5h3m1 0h4m4 0h2m1 0h1m1 0h1m3 0h2m1 0h6m1 0h2M12 29.5h1m1 0h4m1 0h1m1 0h1m4 0h3m3 0h1m1 0h2M4 30.5h7m1 0h1m1 0h1m1 0h1m2 0h2m1 0h1m1 0h2m2 0h1m1 0h1m1 0h2m1 0h1M4 31.5h1m5 0h1m2 0h2m5 0h1m4 0h1m2 0h1m3 0h1M4 32.5h1m1 0h3m1 0h1m1 0h1m1 0h1m2 0h1m2 0h1m3 0h3m1 0h6m1 0h1M4 33.5h1m1 0h3m1 0h1m3 0h1m1 0h2m4 0h1m4 0h1m2 0h5M4 34.5h1m1 0h3m1 0h1m7 0h2m1 0h2m1 0h1m1 0h2m1 0h4m1 0h1M4 35.5h1m5 0h1m2 0h1m2 0h1m1 0h5m1 0h2m2 0h2m3 0h1M4 36.5h7m1 0h1m1 0h1m6 0h1m1 0h1m1 0h4m7 0h1"/></svg>
+          </div>
+
+          <p class="qr-poster-card__cta">📱 סרקו עם מצלמת הטלפון, בחרו כיתה וצברו נקודות לאליפות!</p>
+          <p class="qr-poster-card__url">esti178-sys.github.io/hebrew-language-week</p>
+        </div>
+      </div>
+
+      <div class="modal-dialog__footer modal-dialog__footer--spread">
+        <button type="button" id="print-qr-poster-btn" class="btn btn--primary">
+          🖨️ הדפסת הכרזה / שמירה כ-PDF (עמוד A4)
+        </button>
+        <button type="button" id="qr-modal-done-btn" class="btn btn--secondary">סגירה</button>
+      </div>
     </div>
   </div>
 

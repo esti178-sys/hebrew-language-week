@@ -205,24 +205,45 @@ function sendDailyEmailToTeacher() {
 
 1. ב-Firebase Console היכנסי ל-**Build ← Firestore Database ← Create database**.
 2. העתיקי את `firebaseConfig` מ-**Project Settings ← Your apps** והדביקי בראש `script.js`.
-3. בלשונית **Rules** ב-Firestore הדביקי את הכללים הבאים שמונעים דריסה או מחיקה של נעילות הכפילויות:
+3. בלשונית **Rules** ב-Firestore הדביקי את הכללים המאובטחים הבאים (מגנים על שמות התלמידים, מונעים דריסת נעילות, מגבילים הוספת נקודות ל-12 נק' מקסימום להגשה, ושומרים את המילים החדשות שיום השיא שולח לצפייה למורה בלבד):
 
 ```js
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /submissionLocks/{lockId} {
-      allow read: if true;
+      allow get: if true;
+      allow list: if false;
       allow create: if !exists(/databases/$(database)/documents/submissionLocks/$(lockId));
       allow update, delete: if false;
     }
     match /classScores/{classId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if request.resource.data.total is int
+                    && request.resource.data.total >= 10
+                    && request.resource.data.total <= 12;
+      allow update: if request.resource.data.total is int
+                    && resource.data.total is int
+                    && request.resource.data.total > resource.data.total
+                    && (request.resource.data.total - resource.data.total) <= 12;
+      allow delete: if false;
     }
     match /dailySubmissions/{docId} {
-      allow create, read: if true;
-      allow update, delete: if false;
+      allow create: if request.resource.data.points is int
+                    && request.resource.data.points >= 10
+                    && request.resource.data.points <= 12;
+      allow read, update, delete: if false;
+    }
+    match /inventedWords/{docId} {
+      allow create: if request.resource.data.word is string
+                    && request.resource.data.word.size() >= 2
+                    && request.resource.data.word.size() <= 40
+                    && request.resource.data.meaning is string
+                    && request.resource.data.meaning.size() >= 3
+                    && request.resource.data.meaning.size() <= 160;
+      allow read, update, delete: if false;
     }
   }
 }
 ```
+

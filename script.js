@@ -488,12 +488,15 @@ const STORAGE_KEYS = {
   LOCAL_SCORES: 'hlw_class_scores_v2',
   SOUND_ENABLED: 'hlw_sound_enabled_v2',
   DEVICE_ID: 'hlw_device_id_v1',
+  INVENTED_WORD: 'hlw_invented_word_v1',
 };
 
 const COOKIE_KEYS = {
   DEVICE_ID: 'hlw_dev_id',
   SOLVED_IDS: 'hlw_solved_ids',
 };
+
+const SITE_SHARE_URL = 'https://esti178-sys.github.io/hebrew-language-week/';
 
 const HEBREW_LETTERS = ["א'", "ב'", "ג'", "ד'"];
 const HEBREW_WEEKDAYS_SHORT = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", 'שבת'];
@@ -510,9 +513,10 @@ const state = {
   // מיפוי riddleId -> { points, className, solvedAt }
   solvedMeta: {},
   selectedClass: '',
-  // מיפוי className -> { total: number, byDay: { [dayId]: number } }
+  // מיפוי className -> { total, solves, byDay: {1..6}, solvesByDay: {1..6} }
   classScores: {},
   leaderboardTab: 'today', // 'today' | 'weekly'
+  boardTab: 'today', // 'today' | 'weekly'
   leaderboardGradeFilter: 'all', // 'all' | 'ה' | 'ו' | 'ז' | 'ח'
   teacherMode: false,
   teacherReportOpen: false,
@@ -521,6 +525,7 @@ const state = {
   soundEnabled: true,
   wordIndex: 0,
   cloudSyncMode: 'local', // 'local' | 'firebase' | 'sheets' | 'both'
+  inventedWord: null,
   certProfile: {
     name: '',
     className: '',
@@ -663,17 +668,32 @@ function getCurrentCompetitionDayId() {
 
 // --- אתחול מבנה ניקוד כיתות ---
 
+function createEmptyClassRecord() {
+  return {
+    total: 0,
+    solves: 0,
+    byDay: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 },
+    solvesByDay: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 },
+  };
+}
+
 function createEmptyScoresMap() {
   const map = {};
   CONFIG.classes.forEach((cls) => {
-    map[cls] = { total: 0, byDay: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 } };
+    map[cls] = createEmptyClassRecord();
   });
   return map;
 }
 
 function ensureClassEntry(cls) {
   if (!state.classScores[cls]) {
-    state.classScores[cls] = { total: 0, byDay: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 } };
+    state.classScores[cls] = createEmptyClassRecord();
+  }
+  if (!state.classScores[cls].solvesByDay) {
+    state.classScores[cls].solvesByDay = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+  }
+  if (typeof state.classScores[cls].solves !== 'number') {
+    state.classScores[cls].solves = 0;
   }
   return state.classScores[cls];
 }
@@ -725,6 +745,7 @@ function loadStateFromStorage() {
           if (parsedScores[cls]) {
             state.classScores[cls] = {
               total: Number(parsedScores[cls].total) || 0,
+              solves: Number(parsedScores[cls].solves) || 0,
               byDay: {
                 1: Number(parsedScores[cls].byDay?.[1]) || 0,
                 2: Number(parsedScores[cls].byDay?.[2]) || 0,
@@ -732,6 +753,14 @@ function loadStateFromStorage() {
                 4: Number(parsedScores[cls].byDay?.[4]) || 0,
                 5: Number(parsedScores[cls].byDay?.[5]) || 0,
                 6: Number(parsedScores[cls].byDay?.[6]) || 0,
+              },
+              solvesByDay: {
+                1: Number(parsedScores[cls].solvesByDay?.[1]) || 0,
+                2: Number(parsedScores[cls].solvesByDay?.[2]) || 0,
+                3: Number(parsedScores[cls].solvesByDay?.[3]) || 0,
+                4: Number(parsedScores[cls].solvesByDay?.[4]) || 0,
+                5: Number(parsedScores[cls].solvesByDay?.[5]) || 0,
+                6: Number(parsedScores[cls].solvesByDay?.[6]) || 0,
               },
             };
           }
@@ -752,6 +781,14 @@ function loadStateFromStorage() {
 
     if (!state.certProfile.className && state.selectedClass) {
       state.certProfile.className = state.selectedClass;
+    }
+
+    const rawInvented = localStorage.getItem(STORAGE_KEYS.INVENTED_WORD);
+    if (rawInvented) {
+      const parsedInv = JSON.parse(rawInvented);
+      if (parsedInv && typeof parsedInv.word === 'string' && parsedInv.word.trim()) {
+        state.inventedWord = parsedInv;
+      }
     }
 
     const rawSound = localStorage.getItem(STORAGE_KEYS.SOUND_ENABLED);
@@ -780,6 +817,11 @@ function saveLocalState() {
     localStorage.setItem(STORAGE_KEYS.LOCAL_SCORES, JSON.stringify(state.classScores));
     localStorage.setItem(STORAGE_KEYS.CERT_PROFILE, JSON.stringify(state.certProfile));
     localStorage.setItem(STORAGE_KEYS.SOUND_ENABLED, String(state.soundEnabled));
+    if (state.inventedWord) {
+      localStorage.setItem(STORAGE_KEYS.INVENTED_WORD, JSON.stringify(state.inventedWord));
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.INVENTED_WORD);
+    }
   } catch {
     // התעלמות שקטה
   }
@@ -978,16 +1020,19 @@ async function initCloudSync() {
           const data = docSnap.data();
           const cls = docSnap.id;
           if (!fresh[cls]) {
-            fresh[cls] = { total: 0, byDay: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 } };
+            fresh[cls] = createEmptyClassRecord();
           }
           fresh[cls].total = Number(data.total) || 0;
+          fresh[cls].solves = Number(data.solves) || 0;
           for (let d = 1; d <= 6; d += 1) {
             fresh[cls].byDay[d] = Number(data[`day_${d}`]) || 0;
+            fresh[cls].solvesByDay[d] = Number(data[`solves_day_${d}`]) || 0;
           }
         });
         state.classScores = fresh;
         renderLeaderboard();
         renderTeacherReportTable();
+        renderBoardMode();
       });
     } catch {
       // במקרה של הגדרת Firebase חלקית או חוסר אינטרנט נשארים במצב מקומי
@@ -1003,6 +1048,7 @@ function applyRemoteScoresSnapshot(remoteMap) {
     const entry = remoteMap[cls];
     merged[cls] = {
       total: Number(entry.total) || 0,
+      solves: Number(entry.solves) || 0,
       byDay: {
         1: Number(entry.byDay?.[1]) || 0,
         2: Number(entry.byDay?.[2]) || 0,
@@ -1011,11 +1057,20 @@ function applyRemoteScoresSnapshot(remoteMap) {
         5: Number(entry.byDay?.[5]) || 0,
         6: Number(entry.byDay?.[6]) || 0,
       },
+      solvesByDay: {
+        1: Number(entry.solvesByDay?.[1]) || 0,
+        2: Number(entry.solvesByDay?.[2]) || 0,
+        3: Number(entry.solvesByDay?.[3]) || 0,
+        4: Number(entry.solvesByDay?.[4]) || 0,
+        5: Number(entry.solvesByDay?.[5]) || 0,
+        6: Number(entry.solvesByDay?.[6]) || 0,
+      },
     };
   });
   state.classScores = merged;
   renderLeaderboard();
   renderTeacherReportTable();
+  renderBoardMode();
 }
 
 async function recordClassPoints({ className, riddleId, points, studentName }) {
@@ -1025,10 +1080,13 @@ async function recordClassPoints({ className, riddleId, points, studentName }) {
   if (state.teacherMode || !firebaseApi) {
     const entry = ensureClassEntry(className);
     entry.total += points;
+    entry.solves += 1;
     entry.byDay[riddleId] = (entry.byDay[riddleId] || 0) + points;
+    entry.solvesByDay[riddleId] = (entry.solvesByDay[riddleId] || 0) + 1;
     saveLocalState();
     renderLeaderboard();
     renderTeacherReportTable();
+    renderBoardMode();
     if (state.teacherMode) return;
   }
 
@@ -1059,7 +1117,9 @@ async function recordClassPoints({ className, riddleId, points, studentName }) {
         classDocRef,
         {
           total: increment(points),
+          solves: increment(1),
           [`day_${riddleId}`]: increment(points),
+          [`solves_day_${riddleId}`]: increment(1),
           updatedAt: serverTimestamp(),
         },
         { merge: true }
@@ -1079,10 +1139,13 @@ async function recordClassPoints({ className, riddleId, points, studentName }) {
       // במקרה של ניתוק רגעי מהאינטרנט — שומרים מקומית כגיבוי
       const entry = ensureClassEntry(className);
       entry.total += points;
+      entry.solves += 1;
       entry.byDay[riddleId] = (entry.byDay[riddleId] || 0) + points;
+      entry.solvesByDay[riddleId] = (entry.solvesByDay[riddleId] || 0) + 1;
       saveLocalState();
       renderLeaderboard();
       renderTeacherReportTable();
+      renderBoardMode();
     }
   }
 
@@ -1589,17 +1652,24 @@ function renderWordOfTheDay() {
 
 // --- 🏆 לוח תחרות הניקוד בין הכיתות ---
 
+function formatSolvesCount(count) {
+  const num = Number(count) || 0;
+  return num === 1 ? 'פתרון 1' : `${num} פתרונות`;
+}
+
 function getSortedClassStandings(mode, gradeFilter = 'all') {
   const activeDayId = getCurrentCompetitionDayId();
 
   return CONFIG.classes
     .filter((cls) => gradeFilter === 'all' || cls.startsWith(gradeFilter))
     .map((cls) => {
-      const entry = state.classScores[cls] || { total: 0, byDay: {} };
+      const entry = state.classScores[cls] || createEmptyClassRecord();
       const score = mode === 'today' ? Number(entry.byDay?.[activeDayId]) || 0 : Number(entry.total) || 0;
-      return { className: cls, score };
+      const solves =
+        mode === 'today' ? Number(entry.solvesByDay?.[activeDayId]) || 0 : Number(entry.solves) || 0;
+      return { className: cls, score, solves };
     })
-    .sort((a, b) => b.score - a.score || a.className.localeCompare(b.className, 'he'));
+    .sort((a, b) => b.score - a.score || b.solves - a.solves || a.className.localeCompare(b.className, 'he'));
 }
 
 function renderLeaderboard() {
@@ -1639,6 +1709,7 @@ function renderLeaderboard() {
       <div class="podium-card__medal" aria-hidden="true">${medals[idx]}</div>
       <div class="podium-card__class">כיתה ${item.className}</div>
       <div class="podium-card__pts">${item.score} נקודות</div>
+      <div class="podium-card__solves">${formatSolvesCount(item.solves)}</div>
       ${isMine ? '<span class="podium-card__mine">הכיתה שלך!</span>' : ''}
     `;
     podiumEl.appendChild(card);
@@ -1658,10 +1729,90 @@ function renderLeaderboard() {
       <div class="rank-row__bar" aria-hidden="true">
         <div class="rank-row__fill" style="width: ${widthPct}%"></div>
       </div>
-      <span class="rank-row__pts">${item.score} נק'</span>
+      <div class="rank-row__meta">
+        <span class="rank-row__pts">${item.score} נק'</span>
+        <span class="rank-row__solves">${formatSolvesCount(item.solves)}</span>
+      </div>
     `;
     listEl.appendChild(row);
   });
+}
+
+// --- 📺 מסך הקרנה ללוח / טלוויזיה במסדרון (מתעדכן חי מ-Firebase) ---
+
+function renderBoardMode() {
+  const overlay = document.getElementById('board-mode-overlay');
+  if (!overlay || overlay.hidden) return;
+
+  const podiumEl = document.getElementById('board-podium');
+  const gridEl = document.getElementById('board-grid');
+  const todayBtn = document.getElementById('board-tab-today');
+  const weeklyBtn = document.getElementById('board-tab-weekly');
+  if (!podiumEl || !gridEl) return;
+
+  const activeDayId = getCurrentCompetitionDayId();
+  const activeDayLabel = CONFIG.riddles.find((r) => r.id === activeDayId)?.dayLabel || "יום א'";
+
+  if (todayBtn) {
+    todayBtn.textContent = `ניקוד היום (${activeDayLabel})`;
+    todayBtn.classList.toggle('is-active', state.boardTab === 'today');
+  }
+  if (weeklyBtn) {
+    weeklyBtn.classList.toggle('is-active', state.boardTab === 'weekly');
+  }
+
+  const standings = getSortedClassStandings(state.boardTab, 'all');
+  const maxScore = Math.max(10, standings[0]?.score || 0);
+  const medals = ['🥇', '🥈', '🥉'];
+
+  podiumEl.innerHTML = '';
+  standings.slice(0, 3).forEach((item, idx) => {
+    const card = document.createElement('div');
+    card.className = `board-podium__card board-podium__card--${idx + 1}`;
+    card.innerHTML = `
+      <div class="board-podium__medal" aria-hidden="true">${medals[idx]}</div>
+      <div class="board-podium__class">כיתה ${item.className}</div>
+      <div class="board-podium__pts">${item.score} נקודות</div>
+      <div class="board-podium__solves">${formatSolvesCount(item.solves)}</div>
+    `;
+    podiumEl.appendChild(card);
+  });
+
+  gridEl.innerHTML = '';
+  standings.forEach((item, idx) => {
+    const widthPct = item.score > 0 ? Math.max(8, Math.round((item.score / maxScore) * 100)) : 0;
+    const row = document.createElement('div');
+    row.className = 'board-row';
+    row.innerHTML = `
+      <div class="board-row__top">
+        <span class="board-row__name">#${idx + 1} · כיתה ${item.className}</span>
+        <span class="board-row__pts">${item.score} נק'</span>
+      </div>
+      <div class="board-row__bar" aria-hidden="true">
+        <div class="board-row__fill" style="width: ${widthPct}%"></div>
+      </div>
+      <div class="board-row__sub">${formatSolvesCount(item.solves)}</div>
+    `;
+    gridEl.appendChild(row);
+  });
+}
+
+function openBoardMode() {
+  const overlay = document.getElementById('board-mode-overlay');
+  if (!overlay) return;
+  state.boardTab = state.leaderboardTab;
+  overlay.hidden = false;
+  document.body.style.overflow = 'hidden';
+  renderBoardMode();
+  const closeBtn = document.getElementById('board-close-btn');
+  if (closeBtn) closeBtn.focus();
+}
+
+function closeBoardMode() {
+  const overlay = document.getElementById('board-mode-overlay');
+  if (!overlay || overlay.hidden) return;
+  overlay.hidden = true;
+  document.body.style.overflow = '';
 }
 
 // --- מודאל החידה היומית (כולל רמז, בדיקת כיתה, קונפטי וניקוד אוטומטי) ---
@@ -1780,11 +1931,13 @@ function openRiddleModal(riddleId) {
     dykTextEl.textContent = riddle.didYouKnow;
     if (unlockedBadgeEl) unlockedBadgeEl.textContent = `🏅 תג פתוח: ${riddle.badgeName}`;
     dykEl.hidden = false;
+    updateWhatsappShareButton(riddle, solvedEntry.points, solvedEntry.className || state.selectedClass);
   } else {
     feedbackEl.hidden = true;
     feedbackEl.textContent = '';
     dykEl.hidden = true;
     dykTextEl.textContent = '';
+    updateWhatsappShareButton(null, 0, '');
   }
 
   modal.hidden = false;
@@ -1792,6 +1945,24 @@ function openRiddleModal(riddleId) {
 
   const closeBtn = document.getElementById('modal-close-btn');
   if (closeBtn) closeBtn.focus();
+}
+
+function updateWhatsappShareButton(riddle, earnedPoints, className) {
+  const waBtn = document.getElementById('modal-whatsapp-btn');
+  if (!waBtn) return;
+
+  if (!riddle) {
+    waBtn.hidden = true;
+    waBtn.href = '#';
+    return;
+  }
+
+  const text = className
+    ? `פיצחתי את חידת ${riddle.dayLabel} בשבוע השפה העברית של בית ספר הראל והוספתי ${earnedPoints} נקודות לכיתה ${className}! 🏆 הצטרפו וצברו נקודות לכיתה שלנו: ${SITE_SHARE_URL}`
+    : `פיצחתי את חידת ${riddle.dayLabel} בשבוע השפה העברית של בית ספר הראל! 🏆 הצטרפו לאתגר היומי וצברו נקודות לכיתה שלכם: ${SITE_SHARE_URL}`;
+
+  waBtn.href = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  waBtn.hidden = false;
 }
 
 function handleOptionSelect(riddle, chosenIndex, clickedBtn) {
@@ -1847,6 +2018,7 @@ function handleOptionSelect(riddle, chosenIndex, clickedBtn) {
     if (unlockedBadgeEl) unlockedBadgeEl.textContent = `🏅 זכית במדבקה: ${riddle.badgeName}`;
     dykEl.hidden = false;
     dykEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    updateWhatsappShareButton(riddle, earnedPoints, state.selectedClass);
 
     state.solvedMeta[riddle.id] = {
       points: earnedPoints,
@@ -2017,6 +2189,7 @@ function renderPeakDaySection() {
   if (!state.matchGame.shuffledMeanings.length) {
     resetIdiomMatchGame();
   }
+  renderInventWordSection();
   updateCertificatePreview();
 }
 
@@ -2038,6 +2211,108 @@ function renderScheduleList() {
     `;
     listEl.appendChild(li);
   });
+}
+
+// --- אתגר יום השיא: ממציאים מילה חדשה לבית ספר הראל ---
+
+function renderInventWordSection() {
+  const formEl = document.getElementById('invent-word-form');
+  const successEl = document.getElementById('invent-word-success');
+  const titleEl = document.getElementById('invent-success-title');
+  const previewEl = document.getElementById('invent-success-preview');
+  const wordInput = document.getElementById('invent-word-input');
+  const meaningInput = document.getElementById('invent-meaning-input');
+  const exampleInput = document.getElementById('invent-example-input');
+
+  if (!formEl || !successEl) return;
+
+  if (state.inventedWord) {
+    formEl.hidden = true;
+    successEl.hidden = false;
+    if (titleEl) {
+      titleEl.textContent = state.teacherMode
+        ? 'תצוגת בדיקה — המילה התקבלה בהצלחה (במצב בדיקה למורה לא נשמר בענן) 🏆'
+        : 'המילה שלך נשלחה בהצלחה לצוות השפה העברית של בית ספר הראל! 🏆';
+    }
+    if (previewEl) {
+      const exampleText = state.inventedWord.example
+        ? ` · דוגמה: "${state.inventedWord.example}"`
+        : '';
+      previewEl.textContent = `"${state.inventedWord.word}" — ${state.inventedWord.meaning}${exampleText}`;
+    }
+  } else {
+    formEl.hidden = false;
+    successEl.hidden = true;
+    if (wordInput) wordInput.value = '';
+    if (meaningInput) meaningInput.value = '';
+    if (exampleInput) exampleInput.value = '';
+  }
+}
+
+async function handleInventWordSubmit(event) {
+  event.preventDefault();
+  if (state.inventedWord) return;
+
+  const wordInput = document.getElementById('invent-word-input');
+  const meaningInput = document.getElementById('invent-meaning-input');
+  const exampleInput = document.getElementById('invent-example-input');
+  const submitBtn = document.getElementById('invent-submit-btn');
+
+  const word = (wordInput?.value || '').trim();
+  const meaning = (meaningInput?.value || '').trim();
+  const example = (exampleInput?.value || '').trim();
+
+  if (word.length < 2) {
+    if (wordInput) wordInput.focus();
+    showToast('אנא הקלידו מילה חדשה בת לפחות 2 אותיות.');
+    return;
+  }
+  if (meaning.length < 3) {
+    if (meaningInput) meaningInput.focus();
+    showToast('אנא כתבו בקצרה מה פירוש המילה שהמצאתם.');
+    return;
+  }
+
+  if (submitBtn) submitBtn.disabled = true;
+
+  const entry = {
+    word,
+    meaning,
+    example,
+    studentName: state.certProfile.name.trim() || 'תלמיד/ה',
+    className: state.selectedClass || state.certProfile.className.trim() || '',
+    submittedAt: new Date().toISOString(),
+  };
+
+  if (firebaseApi && !state.teacherMode) {
+    try {
+      const { db, collection, addDoc, serverTimestamp } = firebaseApi;
+      await addDoc(collection(db, 'inventedWords'), {
+        word: entry.word,
+        meaning: entry.meaning,
+        example: entry.example,
+        studentName: entry.studentName,
+        className: entry.className,
+        deviceId: state.deviceId,
+        createdAt: serverTimestamp(),
+      });
+    } catch {
+      // במקרה של ניתוק רגעי או חוקי אבטחה שטרם עודכנו — שומרים מקומית כדי לא לאבד את ההמצאה
+    }
+  }
+
+  state.inventedWord = entry;
+  saveLocalState();
+  renderInventWordSection();
+  playChime('success');
+  launchConfetti();
+  showToast(
+    state.teacherMode
+      ? 'תצוגת בדיקה: המילה התקבלה (לא נשלחה לענן במצב מורה) ✨'
+      : `נהדר! המילה "${entry.word}" נשלחה לצוות השפה העברית של בית ספר הראל ✨`
+  );
+
+  if (submitBtn) submitBtn.disabled = false;
 }
 
 // --- מחולל תעודת אלוף/ת העברית (תצוגה חיה + PDF + PNG) ---
@@ -2351,11 +2626,14 @@ function renderTeacherReportTable() {
   const rows = CONFIG.classes
     .map((cls) => ({
       cls,
-      data: state.classScores[cls] || { total: 0, byDay: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 } },
+      data: state.classScores[cls] || createEmptyClassRecord(),
     }))
-    .sort((a, b) => b.data.total - a.data.total || a.cls.localeCompare(b.cls, 'he'));
+    .sort((a, b) => b.data.total - a.data.total || b.data.solves - a.data.solves || a.cls.localeCompare(b.cls, 'he'));
 
   rows.forEach(({ cls, data }) => {
+    const solves = Number(data.solves) || 0;
+    const total = Number(data.total) || 0;
+    const avg = solves > 0 ? (total / solves).toFixed(1) : '0';
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>כיתה ${cls}</td>
@@ -2365,24 +2643,40 @@ function renderTeacherReportTable() {
       <td>${data.byDay[4] || 0}</td>
       <td>${data.byDay[5] || 0}</td>
       <td>${data.byDay[6] || 0}</td>
-      <td class="teacher-table__total">${data.total || 0}</td>
+      <td class="teacher-table__total">${total}</td>
+      <td>${solves}</td>
+      <td>${avg}</td>
     `;
     tbody.appendChild(tr);
   });
 }
 
 function exportTeacherCsv() {
-  const header = ['כיתה', "יום א'", "יום ב'", "יום ג'", "יום ד'", "יום ה'", "יום ו'", 'סה"כ נקודות'];
+  const header = [
+    'כיתה',
+    "יום א'",
+    "יום ב'",
+    "יום ג'",
+    "יום ד'",
+    "יום ה'",
+    "יום ו'",
+    'סה"כ נקודות',
+    'מספר פתרונות',
+    'ממוצע לפתרון',
+  ];
   const lines = [header.join(',')];
 
   const rows = CONFIG.classes
     .map((cls) => ({
       cls,
-      data: state.classScores[cls] || { total: 0, byDay: {} },
+      data: state.classScores[cls] || createEmptyClassRecord(),
     }))
-    .sort((a, b) => b.data.total - a.data.total);
+    .sort((a, b) => b.data.total - a.data.total || b.data.solves - a.data.solves);
 
   rows.forEach(({ cls, data }) => {
+    const solves = Number(data.solves) || 0;
+    const total = Number(data.total) || 0;
+    const avg = solves > 0 ? (total / solves).toFixed(1) : '0';
     lines.push(
       [
         `"כיתה ${cls}"`,
@@ -2392,7 +2686,9 @@ function exportTeacherCsv() {
         data.byDay[4] || 0,
         data.byDay[5] || 0,
         data.byDay[6] || 0,
-        data.total || 0,
+        total,
+        solves,
+        avg,
       ].join(',')
     );
   });
@@ -2420,10 +2716,14 @@ async function copyDailySummaryForTeacher() {
     `🏆 סיכום ניקוד שבוע השפה העברית (${activeDayLabel} · ${new Date().toLocaleDateString('he-IL')})`,
     '',
     `📌 מובילות היום (${activeDayLabel}):`,
-    ...todayStandings.map((s, i) => `${i + 1}. כיתה ${s.className} — ${s.score} נקודות`),
+    ...todayStandings.map(
+      (s, i) => `${i + 1}. כיתה ${s.className} — ${s.score} נקודות (${formatSolvesCount(s.solves)})`
+    ),
     '',
     '🌟 טבלה מצטברת לשבוע:',
-    ...weeklyStandings.map((s, i) => `${i + 1}. כיתה ${s.className} — ${s.score} נקודות`),
+    ...weeklyStandings.map(
+      (s, i) => `${i + 1}. כיתה ${s.className} — ${s.score} נקודות (${formatSolvesCount(s.solves)})`
+    ),
   ];
 
   const text = lines.join('\n');
@@ -2439,19 +2739,158 @@ function addDemoClassScores() {
   const activeDayId = getCurrentCompetitionDayId();
   CONFIG.classes.forEach((cls) => {
     const entry = ensureClassEntry(cls);
-    const todayPts = (Math.floor(Math.random() * 8) + 2) * 10;
-    const prevPts = (Math.floor(Math.random() * 12) + 4) * 10;
+    const todaySolves = Math.floor(Math.random() * 8) + 2;
+    const todayBonusSolves = Math.floor(Math.random() * (todaySolves + 1));
+    const todayPts = todaySolves * CONFIG.pointsPerRiddle + todayBonusSolves * CONFIG.firstTryBonus;
+
     entry.byDay[activeDayId] = (entry.byDay[activeDayId] || 0) + todayPts;
+    entry.solvesByDay[activeDayId] = (entry.solvesByDay[activeDayId] || 0) + todaySolves;
+
     const prevDay = activeDayId > 1 ? activeDayId - 1 : 1;
     if (prevDay !== activeDayId) {
+      const prevSolves = Math.floor(Math.random() * 10) + 4;
+      const prevBonus = Math.floor(Math.random() * (prevSolves + 1));
+      const prevPts = prevSolves * CONFIG.pointsPerRiddle + prevBonus * CONFIG.firstTryBonus;
       entry.byDay[prevDay] = (entry.byDay[prevDay] || 0) + prevPts;
+      entry.solvesByDay[prevDay] = (entry.solvesByDay[prevDay] || 0) + prevSolves;
     }
+
     entry.total = Object.values(entry.byDay).reduce((a, b) => a + b, 0);
+    entry.solves = Object.values(entry.solvesByDay).reduce((a, b) => a + b, 0);
   });
   saveLocalState();
   renderLeaderboard();
   renderTeacherReportTable();
+  renderBoardMode();
   showToast('נוספו נקודות דמה לבדיקת לוח התחרות והדוח! 🎲');
+}
+
+// --- 🖨️ מודאל כרזת QR מוכנה להדפסה (עמוד A4 נקי) ---
+
+function openQrPosterModal() {
+  const modal = document.getElementById('qr-poster-modal');
+  if (!modal) return;
+  modal.hidden = false;
+  document.body.style.overflow = 'hidden';
+  const closeBtn = document.getElementById('qr-modal-close-btn');
+  if (closeBtn) closeBtn.focus();
+}
+
+function closeQrPosterModal() {
+  const modal = document.getElementById('qr-poster-modal');
+  if (!modal || modal.hidden) return;
+  modal.hidden = true;
+  document.body.style.overflow = '';
+}
+
+function printQrPoster() {
+  const svgContainer = document.getElementById('qr-svg-container');
+  const qrSvgMarkup = svgContainer ? svgContainer.innerHTML : '';
+  const win = window.open('', '_blank', 'width=850,height=1100');
+  if (!win) {
+    showToast('הדפדפן חסם את חלון ההדפסה — אנא אפשרו חלונות קופצים ונסו שוב.');
+    return;
+  }
+
+  win.document.write(`<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>כרזת QR — שבוע השפה העברית · בית ספר הראל</title>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@500;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    @page { size: A4 portrait; margin: 14mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body {
+      font-family: 'Heebo', Arial, sans-serif;
+      background: #ffffff;
+      color: #0e2a47;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10mm;
+    }
+    .poster {
+      width: 100%;
+      max-width: 175mm;
+      border: 4px solid #0e2a47;
+      border-radius: 26px;
+      padding: 16mm 14mm;
+      text-align: center;
+      background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 55%, #fffbeb 100%);
+    }
+    .kicker {
+      display: inline-block;
+      background: #f5c443;
+      color: #081e36;
+      font-size: 16pt;
+      font-weight: 900;
+      padding: 6px 24px;
+      border-radius: 999px;
+      margin-bottom: 10mm;
+    }
+    h1 {
+      font-size: 40pt;
+      font-weight: 900;
+      color: #0e2a47;
+      margin-bottom: 5mm;
+      line-height: 1.1;
+    }
+    .sub {
+      font-size: 16pt;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 12mm;
+    }
+    .qr-box {
+      width: 92mm;
+      height: 92mm;
+      margin: 0 auto 10mm;
+      padding: 6mm;
+      background: #ffffff;
+      border: 4px solid #0ea5e9;
+      border-radius: 22px;
+    }
+    .qr-box svg { width: 100%; height: 100%; display: block; }
+    .cta {
+      font-size: 20pt;
+      font-weight: 900;
+      color: #0e2a47;
+      margin-bottom: 4mm;
+    }
+    .steps {
+      font-size: 13pt;
+      color: #475569;
+      margin-bottom: 8mm;
+      line-height: 1.6;
+    }
+    .url {
+      font-size: 13pt;
+      font-weight: 800;
+      color: #0284c7;
+      direction: ltr;
+    }
+  </style>
+</head>
+<body>
+  <div class="poster">
+    <span class="kicker">בית ספר הראל · כיתות ה'–ח'</span>
+    <h1>שבוע השפה העברית</h1>
+    <p class="sub">17.12 – 24.12 · 6 חידות יומיות · אליפות 20 הכיתות · יום שיא חגיגי!</p>
+    <div class="qr-box">${qrSvgMarkup}</div>
+    <p class="cta">📱 סרקו עם מצלמת הטלפון והצטרפו לאליפות!</p>
+    <p class="steps">בוחרים כיתה · מזינים שם מלא · פותרים את חידת היום וצוברים נקודות לכיתה!</p>
+    <p class="url">esti178-sys.github.io/hebrew-language-week</p>
+  </div>
+  <script>
+    window.addEventListener('load', function () {
+      setTimeout(function () { window.print(); }, 250);
+    });
+  </script>
+</body>
+</html>`);
+  win.document.close();
 }
 
 // --- מצב בדיקה למורה (מוגן בקוד מורה) ואיפוס ---
@@ -2484,6 +2923,7 @@ function setTeacherMode(enabled) {
       selectedClass: state.selectedClass,
       classScores: JSON.parse(JSON.stringify(state.classScores)),
       certProfile: { ...state.certProfile },
+      inventedWord: state.inventedWord ? { ...state.inventedWord } : null,
     };
   }
 
@@ -2491,13 +2931,14 @@ function setTeacherMode(enabled) {
 
   if (!enabled) {
     state.teacherReportOpen = false;
+    closeBoardMode();
+    closeQrPosterModal();
     if (preTeacherSnapshot) {
       state.solvedMeta = preTeacherSnapshot.solvedMeta;
       state.selectedClass = preTeacherSnapshot.selectedClass;
-      if (!firebaseApi) {
-        state.classScores = preTeacherSnapshot.classScores;
-      }
+      state.classScores = preTeacherSnapshot.classScores;
       state.certProfile = preTeacherSnapshot.certProfile;
+      state.inventedWord = preTeacherSnapshot.inventedWord;
       preTeacherSnapshot = null;
 
       const heroNameInput = document.getElementById('hero-student-name');
@@ -2557,6 +2998,7 @@ function toggleTeacherReport(open) {
 function resetProgressForTesting() {
   state.solvedMeta = {};
   state.selectedClass = '';
+  state.inventedWord = null;
   if (!firebaseApi) {
     state.classScores = createEmptyScoresMap();
   }
@@ -2566,6 +3008,7 @@ function resetProgressForTesting() {
     selectedClass: '',
     classScores: createEmptyScoresMap(),
     certProfile: { name: '', className: '', gender: 'female' },
+    inventedWord: null,
   };
 
   try {
@@ -2592,12 +3035,15 @@ function resetProgressForTesting() {
   if (femaleRadio) femaleRadio.checked = true;
 
   closeRiddleModal();
+  closeBoardMode();
+  closeQrPosterModal();
   renderClassPicker();
   renderProgressSummary();
   renderRoadmap();
   renderBadgesShelf();
   renderLeaderboard();
   renderTeacherReportTable();
+  renderInventWordSection();
   resetIdiomMatchGame();
   updateMascotSpeech();
   updateCertificatePreview();
@@ -2685,6 +3131,8 @@ function bindEvents() {
     if (event.key === 'Escape') {
       closeRiddleModal();
       closeTeacherPinModal();
+      closeBoardMode();
+      closeQrPosterModal();
     }
   });
 
@@ -2743,9 +3191,12 @@ function bindEvents() {
     });
   });
 
-  // משחק שידוך ניבים
+  // משחק שידוך ניבים + אתגר המצאת מילה חדשה
   const matchResetBtn = document.getElementById('match-reset-btn');
   if (matchResetBtn) matchResetBtn.addEventListener('click', resetIdiomMatchGame);
+
+  const inventWordForm = document.getElementById('invent-word-form');
+  if (inventWordForm) inventWordForm.addEventListener('submit', handleInventWordSubmit);
 
   // טופס תעודה
   const nameInput = document.getElementById('student-name-input');
@@ -2811,6 +3262,44 @@ function bindEvents() {
           pinInput.focus();
         }
       }
+    });
+  }
+
+  // מסך הקרנה ללוח (טלוויזיית מסדרון / לוח כיתה)
+  const bannerBoardBtn = document.getElementById('banner-board-btn');
+  const boardCloseBtn = document.getElementById('board-close-btn');
+  const boardTabToday = document.getElementById('board-tab-today');
+  const boardTabWeekly = document.getElementById('board-tab-weekly');
+
+  if (bannerBoardBtn) bannerBoardBtn.addEventListener('click', openBoardMode);
+  if (boardCloseBtn) boardCloseBtn.addEventListener('click', closeBoardMode);
+  if (boardTabToday) {
+    boardTabToday.addEventListener('click', () => {
+      state.boardTab = 'today';
+      renderBoardMode();
+    });
+  }
+  if (boardTabWeekly) {
+    boardTabWeekly.addEventListener('click', () => {
+      state.boardTab = 'weekly';
+      renderBoardMode();
+    });
+  }
+
+  // מודאל כרזת QR להדפסה
+  const bannerQrBtn = document.getElementById('banner-qr-btn');
+  const qrModal = document.getElementById('qr-poster-modal');
+  const qrCloseBtn = document.getElementById('qr-modal-close-btn');
+  const qrDoneBtn = document.getElementById('qr-modal-done-btn');
+  const printQrBtn = document.getElementById('print-qr-poster-btn');
+
+  if (bannerQrBtn) bannerQrBtn.addEventListener('click', openQrPosterModal);
+  if (qrCloseBtn) qrCloseBtn.addEventListener('click', closeQrPosterModal);
+  if (qrDoneBtn) qrDoneBtn.addEventListener('click', closeQrPosterModal);
+  if (printQrBtn) printQrBtn.addEventListener('click', printQrPoster);
+  if (qrModal) {
+    qrModal.addEventListener('click', (event) => {
+      if (event.target === qrModal) closeQrPosterModal();
     });
   }
 
