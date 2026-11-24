@@ -2374,19 +2374,34 @@ function bindEvents() {
 
   // שדה שם התלמיד/ה בכותרת ובמודאל (מסונכרנים אוטומטית עם התעודה)
   const heroNameInput = document.getElementById('hero-student-name');
+  const heroSaveBtn = document.getElementById('hero-save-student-btn');
   const modalNameInput = document.getElementById('modal-student-name');
   if (heroNameInput) {
     heroNameInput.value = state.certProfile.name;
     heroNameInput.addEventListener('input', (e) => {
       syncStudentName(e.target.value);
-      // אם כבר נבחרה כיתה ורק השם חסר, עדכון אוטומטי רק כשלוחצים או עוזבים כדי לא להסתיר באמצע הקלדה
     });
-    heroNameInput.addEventListener('blur', () => renderClassPicker());
     heroNameInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        renderClassPicker();
+        if (heroSaveBtn) heroSaveBtn.click();
       }
+    });
+  }
+  if (heroSaveBtn) {
+    heroSaveBtn.addEventListener('click', () => {
+      if (!hasValidStudentName()) {
+        if (heroNameInput) heroNameInput.focus();
+        showToast('אנא הקלידו שם פרטי ושם משפחה.');
+        return;
+      }
+      if (!state.selectedClass) {
+        showToast('מעולה! עכשיו בחרו את הכיתה שלכם למטה 👇');
+        return;
+      }
+      renderClassPicker();
+      updateMascotSpeech();
+      showToast(`נרשמת בהצלחה! כל חידה שתפתרו תוסיף נקודות לכיתה ${state.selectedClass} 🏆`);
     });
   }
   if (modalNameInput) {

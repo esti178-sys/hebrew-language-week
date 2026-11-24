@@ -2578,17 +2578,24 @@ input {
 .student-setup-fields {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.65rem;
+}
+
+.student-name-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
 }
 
 .hero-name-input {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   padding: 0.58rem 0.85rem;
   border-radius: 12px;
-  border: 1.5px solid rgba(255, 255, 255, 0.35);
-  background-color: rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  background-color: #ffffff;
   color: var(--navy-900);
-  font-size: 0.94rem;
+  font-size: 0.95rem;
   font-weight: 700;
 }
 
@@ -2600,7 +2607,7 @@ input {
 .hero-name-input:focus {
   outline: none;
   border-color: var(--mustard-400);
-  box-shadow: 0 0 0 3px rgba(245, 196, 67, 0.32);
+  box-shadow: 0 0 0 3px rgba(245, 196, 67, 0.36);
 }
 
 .modal-name-input {

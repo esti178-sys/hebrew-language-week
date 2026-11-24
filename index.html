@@ -170,19 +170,35 @@
           <strong>יום השיא החגיגי</strong> ותעודת אלוף/ת העברית!
         </p>
 
-        <!-- בוחר כיתה לתחרות הכיתות -->
-        <div class="class-picker-card" id="class-picker-card" aria-label="בחירת כיתה לתחרות">
+        <!-- זיהוי תלמיד/ה ובחירת כיתה לתחרות הכיתות (חד-פעמי לכל השבוע) -->
+        <div class="class-picker-card" id="class-picker-card" aria-label="בחירת כיתה ושם לתחרות">
           <div class="class-picker-card__head">
             <span class="class-picker-card__title" id="class-picker-title">
-              🏫 באיזו כיתה אתם? בחרו כדי לצבור נקודות לתחרות הכיתות:
+              🏫 הירשמו לתחרות הכיתות (פעם אחת לכל השבוע — כדי שכל חידה תיספר בדיוק פעם אחת):
             </span>
             <button type="button" id="change-class-btn" class="class-picker-card__change" hidden>
-              החלפת כיתה
+              עריכת פרטים
             </button>
           </div>
 
-          <div class="class-chips" id="hero-class-chips" role="group" aria-label="רשימת כיתות">
-            <!-- יאוכלס דינמית על ידי script.js -->
+          <div class="student-setup-fields" id="student-setup-fields">
+            <div class="student-name-row">
+              <label for="hero-student-name" class="sr-only">שם פרטי ושם משפחה</label>
+              <input
+                type="text"
+                id="hero-student-name"
+                class="hero-name-input"
+                placeholder="הקלידו שם פרטי ושם משפחה (לדוגמה: נועה לוי)"
+                maxlength="40"
+                autocomplete="name"
+              />
+              <button type="button" id="hero-save-student-btn" class="btn btn--mustard btn--sm">
+                אישור ✓
+              </button>
+            </div>
+            <div class="class-chips" id="hero-class-chips" role="group" aria-label="רשימת כיתות">
+              <!-- יאוכלס דינמית על ידי script.js -->
+            </div>
           </div>
 
           <div class="class-selected-bar" id="class-selected-bar" hidden>
