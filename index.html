@@ -609,9 +609,16 @@
       </div>
 
       <div class="modal-dialog__body">
-        <!-- תזכורת לבחירת כיתה אם עדיין לא נבחרה -->
+        <!-- תזכורת למילוי שם וכיתה אם עדיין לא מולאו -->
         <div class="modal-class-prompt" id="modal-class-prompt" hidden>
-          <span class="modal-class-prompt__label">🏫 לאיזו כיתה לזקוף את הנקודות? בחרו כיתה:</span>
+          <span class="modal-class-prompt__label">🏫 לפני צבירת הנקודות — מלאו שם מלא ובחרו כיתה (כדי שכל תלמיד/ה ייספרו פעם אחת):</span>
+          <input
+            type="text"
+            id="modal-student-name"
+            class="form-input modal-name-input"
+            placeholder="שם פרטי ושם משפחה"
+            maxlength="40"
+          />
           <div class="class-chips class-chips--compact" id="modal-class-chips"></div>
         </div>
 
@@ -645,6 +652,46 @@
       <div class="modal-dialog__footer">
         <button type="button" class="btn btn--secondary" id="modal-done-btn">חזרה למפת המסע</button>
       </div>
+    </div>
+  </div>
+
+  <!-- מודאל קוד כניסה למצב בדיקה למורה (מונע מתלמידים לאפס נקודות) -->
+  <div
+    class="modal-backdrop"
+    id="teacher-pin-modal"
+    hidden
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="pin-modal-title"
+  >
+    <div class="modal-dialog modal-dialog--sm" role="document">
+      <div class="modal-dialog__top">
+        <h3 id="pin-modal-title" class="panel__title">🔐 כניסה למצב בדיקה למורה</h3>
+        <button type="button" class="modal-close" id="pin-modal-close-btn" aria-label="סגירה">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <form id="teacher-pin-form" class="modal-dialog__body" novalidate>
+        <p class="pin-modal__desc">
+          הקלידו את קוד המורה (ניתן לשנות אותו בראש <code>script.js</code>). במצב בדיקה הנקודות לא נשלחות לענן התחרות.
+        </p>
+        <input
+          type="password"
+          id="teacher-pin-input"
+          class="form-input"
+          inputmode="numeric"
+          placeholder="קוד מורה"
+          autocomplete="off"
+        />
+        <p id="teacher-pin-error" class="pin-modal__error" hidden>קוד שגוי — נסו שוב.</p>
+        <div class="pin-modal__actions">
+          <button type="submit" class="btn btn--primary">כניסה למצב מורה</button>
+          <button type="button" id="pin-modal-cancel-btn" class="btn btn--secondary">ביטול</button>
+        </div>
+      </form>
     </div>
   </div>
 

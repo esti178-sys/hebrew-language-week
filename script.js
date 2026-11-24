@@ -28,9 +28,10 @@ const CONFIG = {
   // --- 2. הכיתות המשתתפות בתחרות הניקוד ---
   classes: ["ה'1", "ה'2", "ו'1", "ו'2", "ז'1", "ז'2", "ח'1", "ח'2"],
 
-  // --- 3. ניקוד אוטומטי לכל חידה ---
+  // --- 3. ניקוד אוטומטי וקוד כניסה למצב מורה (מונע מתלמידים לאפס נקודות) ---
   pointsPerRiddle: 10, // נקודות בסיס לפתרון נכון
   firstTryBonus: 2, // בונוס נוסף לפתרון בניסיון ראשון
+  teacherPin: '2026', // קוד סודי לכניסה ל"מצב בדיקה למורה" — שנו לכל קוד שתרצו!
 
   // --- 4. חיבור ענן לניקוד חי בין מכשירים (Firebase Firestore — אופציונלי) ---
   // כדי להפעיל ניקוד משותף חי לכל בית הספר, הדביקו כאן את הפרטים מ-Firebase Console:
@@ -49,17 +50,17 @@ const CONFIG = {
   googleSheetWebhookUrl: '',
 
   // --- 6. תאריך ושעת יום השיא (לטיימר הספירה לאחור) ---
-  peakDayDateTime: '2026-11-29T08:30:00',
+  peakDayDateTime: '2026-12-24T08:30:00',
 
-  // --- 7. תאריכי הפתיחה האוטומטית של 7 הימים (ימים א'–ז') ---
+  // --- 7. תאריכי הפתיחה האוטומטית של 7 הימים (מדלג על שבת 19.12 ומגיע ליום השיא ב-24.12) ---
   dayDates: [
-    '2026-11-22', // יום א' — חידה 1
-    '2026-11-23', // יום ב' — חידה 2
-    '2026-11-24', // יום ג' — חידה 3
-    '2026-11-25', // יום ד' — חידה 4
-    '2026-11-26', // יום ה' — חידה 5
-    '2026-11-27', // יום ו' — חידה 6
-    '2026-11-29', // יום ז' — יום השיא! (יום ראשון)
+    '2026-12-17', // יום א' לאתגר — חמישי 17.12
+    '2026-12-18', // יום ב' לאתגר — שישי 18.12
+    '2026-12-20', // יום ג' לאתגר — ראשון 20.12
+    '2026-12-21', // יום ד' לאתגר — שני 21.12
+    '2026-12-22', // יום ה' לאתגר — שלישי 22.12
+    '2026-12-23', // יום ו' לאתגר — רביעי 23.12
+    '2026-12-24', // יום ז' — יום השיא! חמישי 24.12
   ],
 
   // --- 8. מערך 6 החידות היומיות (גילאי 10–14, כיתות ה'–ח') ---
@@ -298,9 +299,16 @@ const STORAGE_KEYS = {
   SELECTED_CLASS: 'hlw_selected_class_v2',
   LOCAL_SCORES: 'hlw_class_scores_v2',
   SOUND_ENABLED: 'hlw_sound_enabled_v2',
+  DEVICE_ID: 'hlw_device_id_v1',
+};
+
+const COOKIE_KEYS = {
+  DEVICE_ID: 'hlw_dev_id',
+  SOLVED_IDS: 'hlw_solved_ids',
 };
 
 const HEBREW_LETTERS = ["א'", "ב'", "ג'", "ד'"];
+const HEBREW_WEEKDAYS_SHORT = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", 'שבת'];
 const PRAISE_PHRASES = [
   'בול בפוני! 🎯',
   'אלופים בעברית! 🏆',
@@ -310,6 +318,7 @@ const PRAISE_PHRASES = [
 ];
 
 const state = {
+  deviceId: '',
   // מיפוי riddleId -> { points, className, solvedAt }
   solvedMeta: {},
   selectedClass: '',
@@ -343,6 +352,64 @@ let lastFocusedElement = null;
 let firebaseApi = null;
 let audioCtx = null;
 
+// --- עזרי עוגיות ומזהה מכשיר קבוע (למניעת הגשות כפולות מאותו מכשיר) ---
+
+function readCookie(name) {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = document.cookie.match(new RegExp(`(?:^|; )${escaped}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : '';
+}
+
+function writeCookie(name, value, days = 90) {
+  try {
+    const expires = new Date(Date.now() + days * 86400 * 1000).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+  } catch {
+    // התעלמות שקטה אם עוגיות חסומות
+  }
+}
+
+function getOrCreateDeviceId() {
+  let id = '';
+  try {
+    id = localStorage.getItem(STORAGE_KEYS.DEVICE_ID) || '';
+  } catch {
+    id = '';
+  }
+  if (!id) {
+    id = readCookie(COOKIE_KEYS.DEVICE_ID);
+  }
+  if (!id) {
+    const rand = Math.random().toString(36).slice(2, 10);
+    const ts = Date.now().toString(36);
+    id = `dev_${ts}_${rand}`;
+  }
+  try {
+    localStorage.setItem(STORAGE_KEYS.DEVICE_ID, id);
+  } catch {
+    // התעלמות שקטה
+  }
+  writeCookie(COOKIE_KEYS.DEVICE_ID, id, 120);
+  return id;
+}
+
+// יוצר מזהה אחיד לשם תלמיד+כיתה לצורך חסימת כפילויות בצד השרת (גם מגלישה בסתר)
+function normalizeStudentKey(className, fullName) {
+  const cleanClass = String(className || '')
+    .trim()
+    .replace(/['"`\s]/g, '');
+  const cleanName = String(fullName || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/[^\u0590-\u05FFa-z0-9_]/g, '');
+  return `${cleanClass}__${cleanName}`;
+}
+
+function hasValidStudentName() {
+  return state.certProfile.name.trim().length >= 2;
+}
+
 // --- עזרי תאריכים (בזמן מקומי בלבד) ---
 
 function parseLocalDate(isoDateStr) {
@@ -357,9 +424,10 @@ function getTodayStart() {
 
 function formatShortHebrewDate(isoDateStr) {
   const d = parseLocalDate(isoDateStr);
+  const weekday = HEBREW_WEEKDAYS_SHORT[d.getDay()] || '';
   const day = String(d.getDate()).padStart(2, '0');
   const month = String(d.getMonth() + 1).padStart(2, '0');
-  return `${day}.${month}`;
+  return `${weekday} · ${day}.${month}`;
 }
 
 function formatFullHebrewDate(dateObj) {
@@ -420,9 +488,10 @@ function ensureClassEntry(cls) {
   return state.classScores[cls];
 }
 
-// --- שמירה וטעינה מ-localStorage ---
+// --- שמירה וטעינה מ-localStorage + גיבוי בעוגייה למניעת כפל ניקוד ---
 
 function loadStateFromStorage() {
+  state.deviceId = getOrCreateDeviceId();
   state.classScores = createEmptyScoresMap();
 
   try {
@@ -432,6 +501,25 @@ function loadStateFromStorage() {
       if (parsed && typeof parsed === 'object') {
         state.solvedMeta = parsed;
       }
+    }
+
+    // שחזור מגיבוי עוגייה אם תלמיד ניסה למחוק localStorage בלבד
+    const cookieSolved = readCookie(COOKIE_KEYS.SOLVED_IDS);
+    if (cookieSolved) {
+      cookieSolved
+        .split(',')
+        .map((n) => Number(n))
+        .filter((n) => Number.isInteger(n) && n >= 1 && n <= CONFIG.riddles.length)
+        .forEach((id) => {
+          if (!state.solvedMeta[id]) {
+            state.solvedMeta[id] = {
+              points: CONFIG.pointsPerRiddle,
+              className: '',
+              solvedAt: '',
+              restoredFromCookie: true,
+            };
+          }
+        });
     }
 
     const rawClass = localStorage.getItem(STORAGE_KEYS.SELECTED_CLASS);
@@ -495,6 +583,8 @@ function saveLocalState() {
   } catch {
     // התעלמות שקטה
   }
+  const solvedKeys = Object.keys(state.solvedMeta);
+  writeCookie(COOKIE_KEYS.SOLVED_IDS, solvedKeys.join(','), 90);
 }
 
 function getSolvedCount() {
@@ -739,10 +829,31 @@ async function recordClassPoints({ className, riddleId, points, studentName }) {
   renderLeaderboard();
   renderTeacherReportTable();
 
-  // 2. שליחה אוטומטית ל-Firebase Firestore (אם מוגדר)
+  // במצב בדיקה למורה לא שולחים ניקוד אמיתי לענן כדי לא לעוות את תחרות הכיתות!
+  if (state.teacherMode) return;
+
+  const cleanName = (studentName || '').trim() || 'תלמיד/ה';
+  const studentKey = normalizeStudentKey(className, cleanName);
+
+  // 2. שליחה אוטומטית ל-Firebase Firestore עם חסימת כפילויות (מכשיר + שם מלא)
   if (firebaseApi) {
     try {
-      const { db, doc, setDoc, increment, collection, addDoc, serverTimestamp } = firebaseApi;
+      const { db, doc, getDoc, setDoc, increment, collection, addDoc, serverTimestamp } = firebaseApi;
+      const devLockRef = doc(db, 'submissionLocks', `${riddleId}_dev_${state.deviceId}`);
+      const stuLockRef = doc(db, 'submissionLocks', `${riddleId}_stu_${studentKey}`);
+
+      const [devSnap, stuSnap] = await Promise.all([getDoc(devLockRef), getDoc(stuLockRef)]);
+      if (devSnap.exists() || stuSnap.exists()) {
+        // הגשה כפולה נחסמה בצד הענן
+        return;
+      }
+
+      // נעילת המכשיר ושם התלמיד/ה ליום זה לפני זקיפת הניקוד
+      await Promise.all([
+        setDoc(devLockRef, { className, riddleId, studentName: cleanName, createdAt: serverTimestamp() }),
+        setDoc(stuLockRef, { className, riddleId, deviceId: state.deviceId, createdAt: serverTimestamp() }),
+      ]);
+
       const classDocRef = doc(db, 'classScores', className);
       await setDoc(
         classDocRef,
@@ -754,12 +865,13 @@ async function recordClassPoints({ className, riddleId, points, studentName }) {
         { merge: true }
       );
 
-      // שמירת רשומת יומן יומית מפורטת למורה
       await addDoc(collection(db, 'dailySubmissions'), {
         className,
         riddleId,
         points,
-        studentName: studentName || 'תלמיד/ה',
+        studentName: cleanName,
+        studentKey,
+        deviceId: state.deviceId,
         dateIso: new Date().toISOString().slice(0, 10),
         createdAt: serverTimestamp(),
       });
@@ -768,7 +880,7 @@ async function recordClassPoints({ className, riddleId, points, studentName }) {
     }
   }
 
-  // 3. שליחה אוטומטית ל-Google Sheets Webhook (ליומן + מייל יומי אוטומטי למורה)
+  // 3. שליחה אוטומטית ל-Google Sheets Webhook (כולל deviceId + studentKey לחסימת כפילויות)
   if (hasSheetsConfigured()) {
     try {
       await fetch(CONFIG.googleSheetWebhookUrl, {
@@ -781,7 +893,9 @@ async function recordClassPoints({ className, riddleId, points, studentName }) {
           riddleId,
           dayLabel: CONFIG.riddles.find((r) => r.id === riddleId)?.dayLabel || `יום ${riddleId}`,
           className,
-          studentName: studentName || 'תלמיד/ה',
+          studentName: cleanName,
+          studentKey,
+          deviceId: state.deviceId,
           points,
         }),
       });
@@ -814,21 +928,49 @@ function updateMascotSpeech() {
   const solved = getSolvedCount();
   const total = CONFIG.riddles.length;
   const pts = getMyEarnedPoints();
+  const firstName = state.certProfile.name.trim().split(/\s+/)[0] || '';
 
-  if (!state.selectedClass) {
-    speechEl.textContent = 'בחרו את הכיתה שלכם כאן למטה, פתרו את חידת היום וצברו נקודות לאליפות!';
+  if (!state.selectedClass || !hasValidStudentName()) {
+    speechEl.textContent =
+      'הקלידו את שמכם ובחרו כיתה כאן למטה — ואז פתרו את חידת היום כדי לצבור נקודות לאליפות!';
   } else if (solved === 0) {
-    speechEl.textContent = `איזה כיף, נציגי כיתה ${state.selectedClass}! פתרו חידה ראשונה וזכו בעד ${CONFIG.pointsPerRiddle + CONFIG.firstTryBonus} נקודות לכיתה!`;
+    speechEl.textContent = `איזה כיף ${firstName} מכיתה ${state.selectedClass}! פתרו חידה ראשונה וזכו בעד ${
+      CONFIG.pointsPerRiddle + CONFIG.firstTryBonus
+    } נקודות לכיתה!`;
   } else if (solved < total) {
-    speechEl.textContent = `אלופים מכיתה ${state.selectedClass}! כבר פתרתם ${solved} מתוך ${total} חידות וצברתם ${pts} נקודות לכיתה!`;
+    speechEl.textContent = `כל הכבוד ${firstName}! כבר פתרת ${solved} מתוך ${total} חידות וצברת ${pts} נקודות לכיתה ${state.selectedClass}!`;
   } else {
-    speechEl.textContent = `וואו!! פתרתם את כל ${total} החידות והבאתם ${pts} נקודות אדירות לכיתה ${state.selectedClass}! 🏆`;
+    speechEl.textContent = `וואו ${firstName}!! פתרת את כל ${total} החידות והבאת ${pts} נקודות אדירות לכיתה ${state.selectedClass}! 🏆`;
   }
 }
 
-// --- בוחר הכיתה בכותרת ---
+// --- סנכרון שם תלמיד/ה בין הכותרת, המודאל ומחולל התעודה ---
+
+function syncStudentName(newName) {
+  state.certProfile.name = newName;
+  const heroInput = document.getElementById('hero-student-name');
+  const modalInput = document.getElementById('modal-student-name');
+  const certInput = document.getElementById('student-name-input');
+
+  if (heroInput && heroInput.value !== newName) heroInput.value = newName;
+  if (modalInput && modalInput.value !== newName) modalInput.value = newName;
+  if (certInput && certInput.value !== newName) certInput.value = newName;
+
+  saveLocalState();
+  updateMascotSpeech();
+  updateCertificatePreview();
+
+  const modalPrompt = document.getElementById('modal-class-prompt');
+  if (modalPrompt && state.selectedClass && hasValidStudentName()) {
+    modalPrompt.hidden = true;
+  }
+}
+
+// --- בוחר הכיתה והשם בכותרת ---
 
 function renderClassPicker() {
+  const setupFields = document.getElementById('student-setup-fields');
+  const heroNameInput = document.getElementById('hero-student-name');
   const chipsEl = document.getElementById('hero-class-chips');
   const selectedBar = document.getElementById('class-selected-bar');
   const changeBtn = document.getElementById('change-class-btn');
@@ -837,6 +979,11 @@ function renderClassPicker() {
   const ptsEl = document.getElementById('selected-class-points-text');
 
   if (!chipsEl) return;
+  if (heroNameInput && heroNameInput.value !== state.certProfile.name) {
+    heroNameInput.value = state.certProfile.name;
+  }
+
+  const classLocked = getSolvedCount() > 0 && !state.teacherMode;
   chipsEl.innerHTML = '';
 
   CONFIG.classes.forEach((cls) => {
@@ -848,22 +995,31 @@ function renderClassPicker() {
     chipsEl.appendChild(btn);
   });
 
-  if (state.selectedClass) {
-    chipsEl.hidden = true;
+  const isRegistered = Boolean(state.selectedClass && hasValidStudentName());
+  if (isRegistered) {
+    if (setupFields) setupFields.hidden = true;
     selectedBar.hidden = false;
-    changeBtn.hidden = false;
-    titleEl.textContent = '🏫 הכיתה שלך בתחרות השבועית:';
-    badgeEl.textContent = `כיתה ${state.selectedClass}`;
+    changeBtn.hidden = classLocked;
+    titleEl.textContent = classLocked
+      ? '🔒 הכיתה והשם שלך נעולים לשבוע התחרות (למניעת כפל ניקוד):'
+      : '🏫 הפרטים שלך בתחרות השבועית:';
+    badgeEl.textContent = `${state.certProfile.name.trim()} · כיתה ${state.selectedClass}`;
     ptsEl.textContent = `צברת עד כה ${getMyEarnedPoints()} נקודות לכיתה! 🌟`;
   } else {
-    chipsEl.hidden = false;
+    if (setupFields) setupFields.hidden = false;
     selectedBar.hidden = true;
     changeBtn.hidden = true;
-    titleEl.textContent = '🏫 באיזו כיתה אתם? בחרו כדי לצבור נקודות לתחרות הכיתות:';
+    titleEl.textContent =
+      '🏫 הירשמו לתחרות הכיתות (פעם אחת לכל השבוע — כדי שכל חידה תיספר בדיוק פעם אחת):';
   }
 }
 
 function selectStudentClass(cls) {
+  if (getSolvedCount() > 0 && !state.teacherMode && state.selectedClass && state.selectedClass !== cls) {
+    showToast('לא ניתן להחליף כיתה לאחר שכבר נצברו נקודות מהמכשיר הזה 🔒');
+    return;
+  }
+
   state.selectedClass = cls;
   state.certProfile.className = cls;
 
@@ -872,15 +1028,28 @@ function selectStudentClass(cls) {
 
   saveLocalState();
   renderClassPicker();
+  renderModalClassChips();
   renderLeaderboard();
   updateMascotSpeech();
   updateCertificatePreview();
 
-  // אם מודאל החידה פתוח ומציג תזכורת לבחירת כיתה — מסתירים אותה
   const modalPrompt = document.getElementById('modal-class-prompt');
-  if (modalPrompt) modalPrompt.hidden = true;
+  if (modalPrompt && hasValidStudentName()) {
+    modalPrompt.hidden = true;
+  }
 
-  showToast(`מעולה! כל חידה שתפתרו תוסיף נקודות לכיתה ${cls} 🏆`);
+  if (!hasValidStudentName()) {
+    const heroName = document.getElementById('hero-student-name');
+    const modalName = document.getElementById('modal-student-name');
+    if (modalPrompt && !modalPrompt.hidden && modalName) {
+      modalName.focus();
+    } else if (heroName) {
+      heroName.focus();
+    }
+    showToast(`נבחרה כיתה ${cls}! כעת הקלידו שם פרטי ושם משפחה כדי להשלים את ההרשמה.`);
+  } else {
+    showToast(`מעולה! כל חידה שתפתרו תוסיף נקודות לכיתה ${cls} 🏆`);
+  }
 }
 
 // --- עדכון מד התקדמות ---
@@ -1298,9 +1467,12 @@ function openRiddleModal(riddleId) {
     emojiEl.textContent = '';
   }
 
-  // תזכורת לבחירת כיתה אם טרם נבחרה והחידה טרם נפתרה
+  // תזכורת למילוי שם מלא וכיתה אם טרם מולאו והחידה טרם נפתרה
   if (modalClassPrompt) {
-    if (!alreadySolved && !state.selectedClass) {
+    const modalNameInput = document.getElementById('modal-student-name');
+    if (modalNameInput) modalNameInput.value = state.certProfile.name;
+
+    if (!alreadySolved && (!state.selectedClass || !hasValidStudentName())) {
       renderModalClassChips();
       modalClassPrompt.hidden = false;
     } else {
@@ -1373,12 +1545,15 @@ function handleOptionSelect(riddle, chosenIndex, clickedBtn) {
   const hintArea = document.getElementById('modal-hint-area');
   const modalClassPrompt = document.getElementById('modal-class-prompt');
 
-  // אם התלמיד עדיין לא בחר כיתה — מבקשים בחירה זריזה לפני קבלת הניקוד כדי שהכיתה לא תפסיד נקודות!
-  if (!state.selectedClass && chosenIndex === riddle.correctIndex && modalClassPrompt) {
+  // מחייבים שם מלא + כיתה לפני זקיפת ניקוד (למניעת כפל ניקוד וגם להכנת התעודה)
+  if ((!state.selectedClass || !hasValidStudentName()) && chosenIndex === riddle.correctIndex && modalClassPrompt) {
+    const modalNameInput = document.getElementById('modal-student-name');
+    if (modalNameInput) modalNameInput.value = state.certProfile.name;
     renderModalClassChips();
     modalClassPrompt.hidden = false;
     modalClassPrompt.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    showToast('רגע לפני הנקודות — בחרו את הכיתה שלכם למעלה כדי שהניקוד ייזקף לה! 🏫');
+    if (!hasValidStudentName() && modalNameInput) modalNameInput.focus();
+    showToast('רגע לפני הנקודות — הקלידו שם מלא ובחרו כיתה למעלה כדי שהניקוד יירשם פעם אחת! 🏫');
     return;
   }
 
@@ -2036,7 +2211,27 @@ function addDemoClassScores() {
   showToast('נוספו נקודות דמה לבדיקת לוח התחרות והדוח! 🎲');
 }
 
-// --- מצב בדיקה למורה ואיפוס ---
+// --- מצב בדיקה למורה (מוגן בקוד מורה) ואיפוס ---
+
+function openTeacherPinModal() {
+  const pinModal = document.getElementById('teacher-pin-modal');
+  const pinInput = document.getElementById('teacher-pin-input');
+  const pinError = document.getElementById('teacher-pin-error');
+  if (!pinModal) return;
+
+  if (pinInput) pinInput.value = '';
+  if (pinError) pinError.hidden = true;
+  pinModal.hidden = false;
+  document.body.style.overflow = 'hidden';
+  if (pinInput) pinInput.focus();
+}
+
+function closeTeacherPinModal() {
+  const pinModal = document.getElementById('teacher-pin-modal');
+  if (!pinModal || pinModal.hidden) return;
+  pinModal.hidden = true;
+  document.body.style.overflow = '';
+}
 
 function setTeacherMode(enabled) {
   state.teacherMode = enabled;
@@ -2055,13 +2250,14 @@ function setTeacherMode(enabled) {
   }
   if (footerResetBtn) footerResetBtn.hidden = !enabled;
 
+  renderClassPicker();
   renderRoadmap();
   renderPeakDaySection();
   renderTeacherReportTable();
 
   showToast(
     enabled
-      ? 'מצב בדיקה למורה הופעל — כל 7 הימים ולוח דוחות הניקוד פתוחים.'
+      ? 'מצב בדיקה למורה הופעל — כל 7 הימים פתוחים (במצב זה לא נשלח ניקוד לענן).'
       : 'חזרה למצב רגיל לפי תאריכי הפתיחה.'
   );
 }
@@ -2086,15 +2282,23 @@ function resetProgressForTesting() {
 
   try {
     Object.values(STORAGE_KEYS).forEach((key) => {
-      if (key !== STORAGE_KEYS.SOUND_ENABLED) localStorage.removeItem(key);
+      if (key !== STORAGE_KEYS.SOUND_ENABLED && key !== STORAGE_KEYS.DEVICE_ID) {
+        localStorage.removeItem(key);
+      }
     });
   } catch {
     // התעלמות שקטה
   }
+  // ניקוי עוגיית החידות הפתורות לבדיקת המורה בלבד
+  writeCookie(COOKIE_KEYS.SOLVED_IDS, '', -1);
 
+  const heroNameInput = document.getElementById('hero-student-name');
+  const modalNameInput = document.getElementById('modal-student-name');
   const nameInput = document.getElementById('student-name-input');
   const classInput = document.getElementById('student-class-input');
   const femaleRadio = document.querySelector('input[name="cert-gender"][value="female"]');
+  if (heroNameInput) heroNameInput.value = '';
+  if (modalNameInput) modalNameInput.value = '';
   if (nameInput) nameInput.value = '';
   if (classInput) classInput.value = '';
   if (femaleRadio) femaleRadio.checked = true;
@@ -2126,12 +2330,37 @@ function bindEvents() {
     });
   }
 
-  // החלפת כיתה בכותרת
+  // שדה שם התלמיד/ה בכותרת ובמודאל (מסונכרנים אוטומטית עם התעודה)
+  const heroNameInput = document.getElementById('hero-student-name');
+  const modalNameInput = document.getElementById('modal-student-name');
+  if (heroNameInput) {
+    heroNameInput.value = state.certProfile.name;
+    heroNameInput.addEventListener('input', (e) => {
+      syncStudentName(e.target.value);
+      // אם כבר נבחרה כיתה ורק השם חסר, עדכון אוטומטי רק כשלוחצים או עוזבים כדי לא להסתיר באמצע הקלדה
+    });
+    heroNameInput.addEventListener('blur', () => renderClassPicker());
+    heroNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        renderClassPicker();
+      }
+    });
+  }
+  if (modalNameInput) {
+    modalNameInput.value = state.certProfile.name;
+    modalNameInput.addEventListener('input', (e) => {
+      syncStudentName(e.target.value);
+      renderClassPicker();
+    });
+  }
+
+  // עריכת פרטים בכותרת (זמינה רק לפני פתרון החידה הראשונה)
   const changeClassBtn = document.getElementById('change-class-btn');
   if (changeClassBtn) {
     changeClassBtn.addEventListener('click', () => {
-      const chipsEl = document.getElementById('hero-class-chips');
-      if (chipsEl) chipsEl.hidden = !chipsEl.hidden;
+      const setupFields = document.getElementById('student-setup-fields');
+      if (setupFields) setupFields.hidden = !setupFields.hidden;
     });
   }
 
@@ -2150,7 +2379,10 @@ function bindEvents() {
     });
   }
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeRiddleModal();
+    if (event.key === 'Escape') {
+      closeRiddleModal();
+      closeTeacherPinModal();
+    }
   });
 
   if (hintBtn && hintText) {
@@ -2216,9 +2448,7 @@ function bindEvents() {
   if (nameInput) {
     nameInput.value = state.certProfile.name;
     nameInput.addEventListener('input', (e) => {
-      state.certProfile.name = e.target.value;
-      saveLocalState();
-      updateCertificatePreview();
+      syncStudentName(e.target.value);
     });
   }
   if (classInput) {
@@ -2243,6 +2473,38 @@ function bindEvents() {
   if (pngBtn) pngBtn.addEventListener('click', downloadCertificatePng);
   if (printBtn) printBtn.addEventListener('click', handlePrintCertificate);
 
+  // מודאל קוד כניסה למורה
+  const pinModal = document.getElementById('teacher-pin-modal');
+  const pinForm = document.getElementById('teacher-pin-form');
+  const pinInput = document.getElementById('teacher-pin-input');
+  const pinError = document.getElementById('teacher-pin-error');
+  const pinCloseBtn = document.getElementById('pin-modal-close-btn');
+  const pinCancelBtn = document.getElementById('pin-modal-cancel-btn');
+
+  if (pinCloseBtn) pinCloseBtn.addEventListener('click', closeTeacherPinModal);
+  if (pinCancelBtn) pinCancelBtn.addEventListener('click', closeTeacherPinModal);
+  if (pinModal) {
+    pinModal.addEventListener('click', (event) => {
+      if (event.target === pinModal) closeTeacherPinModal();
+    });
+  }
+  if (pinForm) {
+    pinForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const entered = (pinInput?.value || '').trim();
+      if (!CONFIG.teacherPin || entered === String(CONFIG.teacherPin)) {
+        closeTeacherPinModal();
+        setTeacherMode(true);
+      } else {
+        if (pinError) pinError.hidden = false;
+        if (pinInput) {
+          pinInput.value = '';
+          pinInput.focus();
+        }
+      }
+    });
+  }
+
   // כפתורי מצב מורה ודוח ניקוד
   const teacherModeBtn = document.getElementById('teacher-mode-btn');
   const bannerExitBtn = document.getElementById('banner-exit-btn');
@@ -2254,7 +2516,17 @@ function bindEvents() {
   const exportCsvBtn = document.getElementById('export-csv-btn');
   const copySummaryBtn = document.getElementById('copy-daily-summary-btn');
 
-  if (teacherModeBtn) teacherModeBtn.addEventListener('click', () => setTeacherMode(!state.teacherMode));
+  if (teacherModeBtn) {
+    teacherModeBtn.addEventListener('click', () => {
+      if (state.teacherMode) {
+        setTeacherMode(false);
+      } else if (CONFIG.teacherPin) {
+        openTeacherPinModal();
+      } else {
+        setTeacherMode(true);
+      }
+    });
+  }
   if (bannerExitBtn) bannerExitBtn.addEventListener('click', () => setTeacherMode(false));
   if (bannerResetBtn) bannerResetBtn.addEventListener('click', resetProgressForTesting);
   if (footerResetBtn) footerResetBtn.addEventListener('click', resetProgressForTesting);

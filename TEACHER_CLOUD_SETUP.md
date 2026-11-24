@@ -1,53 +1,124 @@
-# מדריך למורה: קבלת ניקוד אוטומטי מכל הכיתות כל יום 🏆
+# מדריך למורה: ניקוד אוטומטי מכל הכיתות + חסימת כפילויות (Anti-Cheat) 🏆
 
-האתר בודק כל חידה **אוטומטית**, מחשב 10 נקודות (+2 בונוס בניסיון ראשון) וזוקף אותן אוטומטית לכיתה שהתלמיד בחר.
-
-כדי שהניקוד ייאסף מכל הטלפונים והמחשבים של התלמידים **ויישלח אלייך אוטומטית למייל בסוף כל יום**, יש שתי אפשרויות חינמיות ופשוטות (אפשר לבחור אחת או לשלב את שתיהן):
+האתר מגן מפני הגשות כפולות ב-**4 שכבות משולבות**:
+1. **מזהה מכשיר קבוע + גיבוי עוגייה (`localStorage` + `Cookie`):** חידה שנפתרה ננעלת על המכשיר גם לאחר רענון וגם אם נמחק `localStorage`.
+2. **נעילת כיתה לאחר ההגשה הראשונה:** לאחר שתלמיד צובר נקודות ראשונות, הכיתה שלו ננעלת ולא ניתן להחליף כיתה.
+3. **קוד מורה למצב בדיקה (`CONFIG.teacherPin = '2026'`):** מונע מתלמידים להיכנס ל"מצב בדיקה למורה" ולאפס נקודות. בנוסף, במצב מורה לא נשלח ניקוד לענן.
+4. **חסימת כפילויות בצד השרת (גם נגד "גלישה בסתר" / Incognito!):** השרת בודק **גם** את מזהה המכשיר **וגם** את שם התלמיד/ה + הכיתה לכל יום, וחוסם אוטומטית כל ניסיון לצבור נקודות פעמיים באותו יום!
 
 ---
 
-## אפשרות א' (הכי מומלצת לקבלת מייל יומי אוטומטי): Google Sheets + מייל יומי אוטומטי (3 דקות!)
+## אפשרות א' (מומלצת למייל יומי אוטומטי): Google Sheets + חסימת כפילויות + מייל יומי (3 דקות!)
 
 1. פתחי גיליון חדש ב-[Google Sheets](https://sheets.new) וקראי לו **"ניקוד שבוע השפה העברית"**.
 2. בתפריט העליון לחצי על **הרחבות (Extensions) ← Apps Script**.
-3. מחקי את הקוד הקיים, והדביקי במקומו את הקוד הבא (שני בשורה 2 את כתובת המייל שלך!):
+3. מחקי את הקוד הקיים והדביקי במקומו את הקוד הבא (שני בשורה 2 את כתובת המייל שלך!):
 
 ```javascript
 // כתובת המייל שלך לקבלת הסיכום היומי האוטומטי:
 const TEACHER_EMAIL = 'your-email@gmail.com';
 const SHEET_NAME = 'Submissions';
+const BLOCKED_SHEET_NAME = 'BlockedDuplicates';
 
-function getOrCreateSheet() {
+function getOrCreateSheet(name, headers) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(SHEET_NAME);
+  let sheet = ss.getSheetByName(name);
   if (!sheet) {
-    sheet = ss.insertSheet(SHEET_NAME);
-    sheet.appendRow(['תאריך', 'שעה', 'יום החידה', 'מספר יום', 'כיתה', 'שם תלמיד/ה', 'נקודות']);
+    sheet = ss.insertSheet(name);
+    sheet.appendRow(headers);
   }
   return sheet;
 }
 
-// מקבל אוטומטית כל פתרון נכון מהאתר ורושם בגיליון
+// מקבל כל פתרון מהאתר, בודק כפילויות לפי מכשיר + שם תלמיד/ה לאותו יום, ורושם רק הגשה ראשונה!
 function doPost(e) {
-  const sheet = getOrCreateSheet();
-  const data = JSON.parse(e.postData.contents);
-  sheet.appendRow([
-    data.dateIso || '',
-    data.timeStr || '',
-    data.dayLabel || '',
-    Number(data.riddleId) || 1,
-    data.className || 'ללא כיתה',
-    data.studentName || 'תלמיד/ה',
-    Number(data.points) || 0,
-  ]);
-  return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(
-    ContentService.MimeType.JSON
-  );
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sheet = getOrCreateSheet(SHEET_NAME, [
+      'תאריך',
+      'שעה',
+      'יום החידה',
+      'מספר יום',
+      'כיתה',
+      'שם תלמיד/ה',
+      'נקודות',
+      'מזהה מכשיר',
+      'מזהה תלמיד',
+    ]);
+
+    const data = JSON.parse(e.postData.contents);
+    const riddleId = Number(data.riddleId) || 1;
+    const deviceId = String(data.deviceId || '').trim();
+    const studentKey = String(data.studentKey || '').trim();
+
+    // בדיקת כפילויות מול כל ההגשות הקיימות לאותו יום חידה
+    const existingRows = sheet.getDataRange().getValues().slice(1);
+    const isDuplicate = existingRows.some((row) => {
+      const sameDay = Number(row[3]) === riddleId;
+      if (!sameDay) return false;
+      const sameDevice = deviceId && String(row[7] || '') === deviceId;
+      const sameStudent = studentKey && String(row[8] || '') === studentKey;
+      return sameDevice || sameStudent;
+    });
+
+    if (isDuplicate) {
+      const blockedSheet = getOrCreateSheet(BLOCKED_SHEET_NAME, [
+        'תאריך',
+        'שעה',
+        'מספר יום',
+        'כיתה',
+        'שם תלמיד/ה',
+        'מזהה מכשיר',
+        'סיבה',
+      ]);
+      blockedSheet.appendRow([
+        data.dateIso || '',
+        data.timeStr || '',
+        riddleId,
+        data.className || '',
+        data.studentName || '',
+        deviceId,
+        'כפילות נחסמה אוטומטית (מכשיר או שם תלמיד/ה כבר הוגשו ביום זה)',
+      ]);
+      return ContentService.createTextOutput(JSON.stringify({ ok: false, duplicate: true })).setMimeType(
+        ContentService.MimeType.JSON
+      );
+    }
+
+    sheet.appendRow([
+      data.dateIso || '',
+      data.timeStr || '',
+      data.dayLabel || '',
+      riddleId,
+      data.className || 'ללא כיתה',
+      data.studentName || 'תלמיד/ה',
+      Number(data.points) || 0,
+      deviceId,
+      studentKey,
+    ]);
+
+    return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(
+      ContentService.MimeType.JSON
+    );
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // מחזיר לאתר את טבלת הניקוד העדכנית של כל הכיתות
 function doGet() {
-  const sheet = getOrCreateSheet();
+  const sheet = getOrCreateSheet(SHEET_NAME, [
+    'תאריך',
+    'שעה',
+    'יום החידה',
+    'מספר יום',
+    'כיתה',
+    'שם תלמיד/ה',
+    'נקודות',
+    'מזהה מכשיר',
+    'מזהה תלמיד',
+  ]);
   const rows = sheet.getDataRange().getValues().slice(1);
   const scores = {};
 
@@ -70,7 +141,17 @@ function doGet() {
 
 // שולח אלייך מייל יומי אוטומטי עם מצב התחרות היום ובסיכום השבועי!
 function sendDailyEmailToTeacher() {
-  const sheet = getOrCreateSheet();
+  const sheet = getOrCreateSheet(SHEET_NAME, [
+    'תאריך',
+    'שעה',
+    'יום החידה',
+    'מספר יום',
+    'כיתה',
+    'שם תלמיד/ה',
+    'נקודות',
+    'מזהה מכשיר',
+    'מזהה תלמיד',
+  ]);
   const rows = sheet.getDataRange().getValues().slice(1);
   const todayIso = Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM-dd');
 
@@ -99,7 +180,7 @@ function sendDailyEmailToTeacher() {
     `שלום! הנה סיכום הניקוד האוטומטי של שבוע השפה העברית לתאריך ${todayIso}:\n\n` +
     `📌 דירוג היום:\n${formatList(todayMap)}\n\n` +
     `🏆 טבלה מצטברת לשבוע:\n${formatList(weeklyMap)}\n\n` +
-    `לצפייה בטבלה המלאה: ${SpreadsheetApp.getActiveSpreadsheet().getUrl()}`;
+    `לצפייה בגיליון המלא (כולל לשונית חסימת כפילויות): ${SpreadsheetApp.getActiveSpreadsheet().getUrl()}`;
 
   MailApp.sendEmail({
     to: TEACHER_EMAIL,
@@ -113,36 +194,35 @@ function sendDailyEmailToTeacher() {
    - סוג: **אפליקציית אינטרנט (Web app)**
    - הפעל בתור: **אני (Me)**
    - למי יש גישה: **כל אחד (Anyone)**
-   - לחצי **פריסה (Deploy)** ואשרי הרשאות.
-   - **העתיקי את כתובת ה-URL** שתקבלי והדביקי אותה בקובץ `script.js` בשדה `googleSheetWebhookUrl`.
+   - העתיקי את ה-URL והדביקי אותו בראש `script.js` בשדה `googleSheetWebhookUrl`.
 5. **הגדרת המייל היומי האוטומטי:**
-   - בתפריט השמאלי של Apps Script לחצי על אייקון ה**שעון (Triggers / מפעילים)** ← **הוסף מפעיל (Add Trigger)**.
-   - בחרי בפונקציה: `sendDailyEmailToTeacher`
-   - מקור אירוע: **מופעל זמן (Time-driven)** ← **טיימר יומי (Day timer)** ← בחרי שעה (לדוגמה: `14:00–15:00`).
-   - שמרי! מעכשיו בכל יום אחר הצהריים ינחת אצלך במייל דוח מסודר אוטומטית.
+   - בתפריט השמאלי של Apps Script לחצי על אייקון ה**שעון (Triggers)** ← **הוסף מפעיל (Add Trigger)**.
+   - פונקציה: `sendDailyEmailToTeacher` | מקור: **Time-driven** | **Day timer** | שעה רצויה (למשל `14:00–15:00`).
 
 ---
 
-## אפשרות ב': חיבור ל-Firebase Firestore (לניקוד חי בזמן אמת בין כל המכשירים)
+## אפשרות ב': Firebase Firestore (ניקוד חי בזמן אמת + נעילת כפילויות בענן)
 
-מאחר שכבר פתחת פרויקט ב-Firebase:
-1. ב-Firebase Console היכנסי ל-**Build ← Firestore Database ← Create database** (בחרי Production או Test mode).
-2. היכנסי ל-**Project Settings (גלגל שיניים) ← Your apps ← הוספת אפליקציית Web (`</>`)** והעתיקי את האובייקט `firebaseConfig`.
-3. הדביקי את הערכים בתוך `CONFIG.firebaseConfig` בראש הקובץ `script.js`.
-4. בלשונית **Rules** ב-Firestore הדביקי כללי אבטחה פשוטים לתקופת שבוע השפה העברית:
+1. ב-Firebase Console היכנסי ל-**Build ← Firestore Database ← Create database**.
+2. העתיקי את `firebaseConfig` מ-**Project Settings ← Your apps** והדביקי בראש `script.js`.
+3. בלשונית **Rules** ב-Firestore הדביקי את הכללים הבאים שמונעים דריסה או מחיקה של נעילות הכפילויות:
 
 ```js
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    match /submissionLocks/{lockId} {
+      allow read: if true;
+      allow create: if !exists(/databases/$(database)/documents/submissionLocks/$(lockId));
+      allow update, delete: if false;
+    }
     match /classScores/{classId} {
       allow read, write: if true;
     }
     match /dailySubmissions/{docId} {
       allow create, read: if true;
+      allow update, delete: if false;
     }
   }
 }
 ```
-
-מרגע זה, בכל פעם שתלמיד פותר חידה — הטבלה באתר מתעדכנת **מיידית ובזמן אמת** על המסכים של כל הכיתות, ובמצב **"מצב בדיקה למורה" ← "📊 דוח ניקוד כיתות"** תוכלי גם להוריד קובץ Excel (CSV) בכל רגע!

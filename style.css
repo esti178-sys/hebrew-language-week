@@ -2561,6 +2561,77 @@ input {
   }
 }
 
+/* עזר נגישות + שדות רישום תלמיד/ה + מודאל קוד מורה */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.student-setup-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.hero-name-input {
+  width: 100%;
+  padding: 0.58rem 0.85rem;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  background-color: rgba(255, 255, 255, 0.95);
+  color: var(--navy-900);
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.hero-name-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.hero-name-input:focus {
+  outline: none;
+  border-color: var(--mustard-400);
+  box-shadow: 0 0 0 3px rgba(245, 196, 67, 0.32);
+}
+
+.modal-name-input {
+  margin-bottom: 0.6rem;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.92rem;
+}
+
+.modal-dialog--sm {
+  width: min(440px, 100%);
+}
+
+.pin-modal__desc {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.9rem;
+}
+
+.pin-modal__error {
+  margin-top: 0.55rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--error-700);
+}
+
+.pin-modal__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
 /* ==========================================================================
    רספונסיביות מלאה למובייל וטאבלט
    ========================================================================== */
