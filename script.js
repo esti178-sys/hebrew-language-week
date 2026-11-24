@@ -38,16 +38,15 @@ const CONFIG = {
   firstTryBonus: 2, // בונוס נוסף לפתרון בניסיון ראשון
   teacherPin: '2026', // קוד סודי לכניסה ל"מצב בדיקה למורה" — שנו לכל קוד שתרצו!
 
-  // --- 4. חיבור ענן לניקוד חי בין מכשירים (Firebase Firestore — אופציונלי) ---
-  // כדי להפעיל ניקוד משותף חי לכל בית הספר, הדביקו כאן את הפרטים מ-Firebase Console:
-  // (Project Settings -> Your apps -> Web app -> firebaseConfig)
+  // --- 4. חיבור ענן לניקוד חי בין מכשירים (Firebase Firestore — מחובר!) ---
   firebaseConfig: {
-    apiKey: '',
-    authDomain: '',
-    projectId: '',
-    storageBucket: '',
-    messagingSenderId: '',
-    appId: '',
+    apiKey: 'AIzaSyBlSdvGVuOVavslbj7a4xe0nfT2IoHj_ik',
+    authDomain: 'hebrew-language-week.firebaseapp.com',
+    projectId: 'hebrew-language-week',
+    storageBucket: 'hebrew-language-week.firebasestorage.app',
+    messagingSenderId: '803413993762',
+    appId: '1:803413993762:web:20e929852f0258f7be5d7b',
+    measurementId: 'G-9P4DYV46L0',
   },
 
   // --- 5. חיבור לטבלת Google Sheets + שליחת מייל יומי אוטומטי למורה (אופציונלי) ---
@@ -827,21 +826,21 @@ function applyRemoteScoresSnapshot(remoteMap) {
 async function recordClassPoints({ className, riddleId, points, studentName }) {
   if (!className || !points) return;
 
-  // 1. עדכון מקומי מיידי (לתגובה מהירה למשתמש)
-  const entry = ensureClassEntry(className);
-  entry.total += points;
-  entry.byDay[riddleId] = (entry.byDay[riddleId] || 0) + points;
-  saveLocalState();
-  renderLeaderboard();
-  renderTeacherReportTable();
-
-  // במצב בדיקה למורה לא שולחים ניקוד אמיתי לענן כדי לא לעוות את תחרות הכיתות!
-  if (state.teacherMode) return;
+  // במצב בדיקה למורה: עדכון מקומי בלבד לתצוגה, לא נשלח ניקוד אמיתי לענן!
+  if (state.teacherMode || !firebaseApi) {
+    const entry = ensureClassEntry(className);
+    entry.total += points;
+    entry.byDay[riddleId] = (entry.byDay[riddleId] || 0) + points;
+    saveLocalState();
+    renderLeaderboard();
+    renderTeacherReportTable();
+    if (state.teacherMode) return;
+  }
 
   const cleanName = (studentName || '').trim() || 'תלמיד/ה';
   const studentKey = normalizeStudentKey(className, cleanName);
 
-  // 2. שליחה אוטומטית ל-Firebase Firestore עם חסימת כפילויות (מכשיר + שם מלא)
+  // שליחה אוטומטית ל-Firebase Firestore עם חסימת כפילויות (מכשיר + שם מלא)
   if (firebaseApi) {
     try {
       const { db, doc, getDoc, setDoc, increment, collection, addDoc, serverTimestamp } = firebaseApi;
@@ -850,7 +849,7 @@ async function recordClassPoints({ className, riddleId, points, studentName }) {
 
       const [devSnap, stuSnap] = await Promise.all([getDoc(devLockRef), getDoc(stuLockRef)]);
       if (devSnap.exists() || stuSnap.exists()) {
-        // הגשה כפולה נחסמה בצד הענן
+        showToast('החידה הזו כבר נרשמה בעבר עבור מכשיר או תלמיד/ה זה — הנקודות לא נוספו פעמיים 🔒');
         return;
       }
 
@@ -882,7 +881,13 @@ async function recordClassPoints({ className, riddleId, points, studentName }) {
         createdAt: serverTimestamp(),
       });
     } catch {
-      // ממשיכים ללא הפרעה לתלמיד
+      // במקרה של ניתוק רגעי מהאינטרנט — שומרים מקומית כגיבוי
+      const entry = ensureClassEntry(className);
+      entry.total += points;
+      entry.byDay[riddleId] = (entry.byDay[riddleId] || 0) + points;
+      saveLocalState();
+      renderLeaderboard();
+      renderTeacherReportTable();
     }
   }
 
