@@ -1500,7 +1500,7 @@ function renderRoadmap() {
       <div class="day-card__peak-meta">
         <span class="day-card__icon-badge" aria-hidden="true">${peakUnlocked ? '🏆' : '🔒'}</span>
         <div>
-          <span class="day-card__day-name">יום ז' · פסגת יום השיא החגיגי</span>
+          <span class="day-card__day-name">פסגת יום השיא החגיגי</span>
           <span class="day-card__date">${peakDateLabel}</span>
         </div>
         <span class="day-card__status ${
