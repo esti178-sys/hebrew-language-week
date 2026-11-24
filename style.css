@@ -717,6 +717,7 @@ input {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0.55rem;
+  direction: ltr;
 }
 
 .countdown-unit {
