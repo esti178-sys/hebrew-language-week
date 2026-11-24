@@ -2633,6 +2633,70 @@ input {
   margin-top: 1rem;
 }
 
+/* סידור 20 הכיתות בשורות נקיות לפי שכבות */
+.class-chips--grouped {
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+}
+
+.class-grade-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.class-grade-row__label {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #bae6fd;
+  min-width: 48px;
+}
+
+.class-chips--compact .class-grade-row__label {
+  color: var(--text-muted);
+}
+
+.class-grade-row .class-chip {
+  padding: 0.32rem 0.68rem;
+  font-size: 0.84rem;
+}
+
+/* כפתורי סינון לפי שכבה בלוח התוצאות */
+.grade-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1.2rem;
+}
+
+.grade-filter-btn {
+  padding: 0.38rem 0.85rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--border-subtle);
+  background-color: var(--bg-page);
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.grade-filter-btn:hover {
+  border-color: var(--sky-500);
+  color: var(--navy-900);
+}
+
+.grade-filter-btn.is-active {
+  background-color: var(--sky-600);
+  border-color: var(--sky-600);
+  color: #ffffff;
+}
+
 /* ==========================================================================
    רספונסיביות מלאה למובייל וטאבלט
    ========================================================================== */

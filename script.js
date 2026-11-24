@@ -25,8 +25,13 @@ const CONFIG = {
   certificateSchoolLine: 'שבוע השפה העברית · בית הספר',
   certificateSignature: 'צוות השפה העברית',
 
-  // --- 2. הכיתות המשתתפות בתחרות הניקוד ---
-  classes: ["ה'1", "ה'2", "ו'1", "ו'2", "ז'1", "ז'2", "ח'1", "ח'2"],
+  // --- 2. הכיתות המשתתפות בתחרות הניקוד (20 כיתות: 5 ה', 5 ו', 6 ז', 4 ח') ---
+  classes: [
+    "ה'1", "ה'2", "ה'3", "ה'4", "ה'5",
+    "ו'1", "ו'2", "ו'3", "ו'4", "ו'5",
+    "ז'1", "ז'2", "ז'3", "ז'4", "ז'5", "ז'6",
+    "ח'1", "ח'2", "ח'3", "ח'4",
+  ],
 
   // --- 3. ניקוד אוטומטי וקוד כניסה למצב מורה (מונע מתלמידים לאפס נקודות) ---
   pointsPerRiddle: 10, // נקודות בסיס לפתרון נכון
@@ -325,6 +330,7 @@ const state = {
   // מיפוי className -> { total: number, byDay: { [dayId]: number } }
   classScores: {},
   leaderboardTab: 'today', // 'today' | 'weekly'
+  leaderboardGradeFilter: 'all', // 'all' | 'ה' | 'ו' | 'ז' | 'ח'
   teacherMode: false,
   teacherReportOpen: false,
   activeRiddleId: null,
@@ -966,6 +972,45 @@ function syncStudentName(newName) {
   }
 }
 
+// מציג את 20 הכיתות בצורה מסודרת לפי שורות שכבה (ה', ו', ז', ח')
+function renderGroupedClassChips(containerEl) {
+  if (!containerEl) return;
+  containerEl.innerHTML = '';
+  containerEl.classList.add('class-chips--grouped');
+
+  const gradeOrder = [];
+  const byGrade = {};
+  CONFIG.classes.forEach((cls) => {
+    const grade = cls.charAt(0);
+    if (!byGrade[grade]) {
+      byGrade[grade] = [];
+      gradeOrder.push(grade);
+    }
+    byGrade[grade].push(cls);
+  });
+
+  gradeOrder.forEach((grade) => {
+    const row = document.createElement('div');
+    row.className = 'class-grade-row';
+
+    const label = document.createElement('span');
+    label.className = 'class-grade-row__label';
+    label.textContent = `שכבת ${grade}':`;
+    row.appendChild(label);
+
+    byGrade[grade].forEach((cls) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `class-chip${state.selectedClass === cls ? ' is-selected' : ''}`;
+      btn.textContent = cls;
+      btn.addEventListener('click', () => selectStudentClass(cls));
+      row.appendChild(btn);
+    });
+
+    containerEl.appendChild(row);
+  });
+}
+
 // --- בוחר הכיתה והשם בכותרת ---
 
 function renderClassPicker() {
@@ -984,16 +1029,7 @@ function renderClassPicker() {
   }
 
   const classLocked = getSolvedCount() > 0 && !state.teacherMode;
-  chipsEl.innerHTML = '';
-
-  CONFIG.classes.forEach((cls) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = `class-chip${state.selectedClass === cls ? ' is-selected' : ''}`;
-    btn.textContent = cls;
-    btn.addEventListener('click', () => selectStudentClass(cls));
-    chipsEl.appendChild(btn);
-  });
+  renderGroupedClassChips(chipsEl);
 
   const isRegistered = Boolean(state.selectedClass && hasValidStudentName());
   if (isRegistered) {
@@ -2433,6 +2469,12 @@ function bindEvents() {
       renderLeaderboard();
     });
   }
+  document.querySelectorAll('.grade-filter-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      state.leaderboardGradeFilter = btn.dataset.grade || 'all';
+      renderLeaderboard();
+    });
+  });
 
   // משחק שידוך ניבים
   const matchResetBtn = document.getElementById('match-reset-btn');
