@@ -21,9 +21,9 @@
 
 const CONFIG = {
   // --- 1. פרטי בית הספר והתעודה ---
-  schoolSubtitle: "חגיגת השפה העברית · כיתות ה'–ח'",
-  certificateSchoolLine: 'שבוע השפה העברית · בית הספר',
-  certificateSignature: 'צוות השפה העברית',
+  schoolSubtitle: "בית ספר הראל · חגיגת השפה העברית (כיתות ה'–ח')",
+  certificateSchoolLine: 'שבוע השפה העברית · בית ספר הראל',
+  certificateSignature: 'צוות השפה העברית · בי"ס הראל',
 
   // --- 2. הכיתות המשתתפות בתחרות הניקוד (20 כיתות: 5 ה', 5 ו', 6 ז', 4 ח') ---
   classes: [
@@ -853,10 +853,10 @@ async function recordClassPoints({ className, riddleId, points, studentName }) {
         return;
       }
 
-      // נעילת המכשיר ושם התלמיד/ה ליום זה לפני זקיפת הניקוד
+      // נעילת המכשיר ושם התלמיד/ה ליום זה לפני זקיפת הניקוד (ללא שמירת שם גלוי במסמך הנעילה)
       await Promise.all([
-        setDoc(devLockRef, { className, riddleId, studentName: cleanName, createdAt: serverTimestamp() }),
-        setDoc(stuLockRef, { className, riddleId, deviceId: state.deviceId, createdAt: serverTimestamp() }),
+        setDoc(devLockRef, { className, riddleId, createdAt: serverTimestamp() }),
+        setDoc(stuLockRef, { className, riddleId, createdAt: serverTimestamp() }),
       ]);
 
       const classDocRef = doc(db, 'classScores', className);
@@ -930,9 +930,10 @@ function showToast(message) {
   }, 3400);
 }
 
-// --- עדכון בועת הדיבור של חכמון הינשוף ---
+// --- עדכון בועת הדיבור המזמינה בכותרת ---
 
 function updateMascotSpeech() {
+  const headingEl = document.getElementById('mascot-heading');
   const speechEl = document.getElementById('mascot-speech');
   if (!speechEl) return;
 
@@ -942,16 +943,20 @@ function updateMascotSpeech() {
   const firstName = state.certProfile.name.trim().split(/\s+/)[0] || '';
 
   if (!state.selectedClass || !hasValidStudentName()) {
+    if (headingEl) headingEl.textContent = 'מוכנים לאתגר העברית של הראל? 🚀';
     speechEl.textContent =
-      'הקלידו את שמכם ובחרו כיתה כאן למטה — ואז פתרו את חידת היום כדי לצבור נקודות לאליפות!';
+      'בוחרים כיתה, מפצחים את חידת היום ולוקחים את הגביע הבית־ספרי!';
   } else if (solved === 0) {
-    speechEl.textContent = `איזה כיף ${firstName} מכיתה ${state.selectedClass}! פתרו חידה ראשונה וזכו בעד ${
+    if (headingEl) headingEl.textContent = `יאללה ${firstName}, כיתה ${state.selectedClass} יוצאת לדרך! 🔥`;
+    speechEl.textContent = `חידה אחת מדויקת שווה עד ${
       CONFIG.pointsPerRiddle + CONFIG.firstTryBonus
-    } נקודות לכיתה!`;
+    } נקודות לכיתה ומדבקת הישג ראשונה!`;
   } else if (solved < total) {
-    speechEl.textContent = `כל הכבוד ${firstName}! כבר פתרת ${solved} מתוך ${total} חידות וצברת ${pts} נקודות לכיתה ${state.selectedClass}!`;
+    if (headingEl) headingEl.textContent = `כיתה ${state.selectedClass} על הגל! ✨`;
+    speechEl.textContent = `כל הכבוד ${firstName} — כבר פיצחת ${solved} מתוך ${total} חידות והבאת ${pts} נקודות לכיתה!`;
   } else {
-    speechEl.textContent = `וואו ${firstName}!! פתרת את כל ${total} החידות והבאת ${pts} נקודות אדירות לכיתה ${state.selectedClass}! 🏆`;
+    if (headingEl) headingEl.textContent = `אלופי העברית של הראל! 🏆`;
+    speechEl.textContent = `וואו ${firstName}! פיצחת את כל ${total} החידות והבאת ${pts} נקודות אדירות לכיתה ${state.selectedClass}!`;
   }
 }
 
