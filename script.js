@@ -475,30 +475,6 @@ const CONFIG = {
       location: 'כיתות האם',
     },
   ],
-
-  // --- 12. קישורים למשחקים וחידונים חיצוניים ליום השיא ---
-  externalGames: [
-    {
-      title: 'חידוני האקדמיה ללשון העברית',
-      description: 'שאלונים רשמיים ומשעשעים על עברית נכונה, ביטויים וחידושי מילים.',
-      url: 'https://hebrew-academy.org.il/',
-    },
-    {
-      title: 'חידון כיתתי חי (Kahoot)',
-      description: 'הצטרפו לחידון הטריוויה השכבתי באמצעות קוד המשחק שיוקרן על הלוח.',
-      url: 'https://kahoot.it/',
-    },
-    {
-      title: 'משחקי שורשים, משקלים וניבים (Wordwall)',
-      description: 'גלגל מזל, התאמת זוגות ומשחקי מיון מהירים לתרגול בכיף.',
-      url: 'https://wordwall.net/he',
-    },
-    {
-      title: 'אוצרות השפה — הספרייה הלאומית',
-      description: 'סיפורים מרתקים, כרזות עתיקות ומכתבים מקוריים של אליעזר בן-יהודה.',
-      url: 'https://www.nli.org.il/he',
-    },
-  ],
 };
 
 /* ============================================================================
@@ -522,11 +498,11 @@ const COOKIE_KEYS = {
 const HEBREW_LETTERS = ["א'", "ב'", "ג'", "ד'"];
 const HEBREW_WEEKDAYS_SHORT = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", 'שבת'];
 const PRAISE_PHRASES = [
-  'בול בפוני! 🎯',
+  'קליעה למטרה! 🎯',
   'אלופים בעברית! 🏆',
   'שפה ברמה גבוהה! ✨',
-  'פגיעה מדויקת! 🌟',
-  'איזה מוח חד! 🧠',
+  'תשובה מדויקת! 🌟',
+  'חשיבה חדה ומצוינת! 🧠',
 ];
 
 const state = {
@@ -564,6 +540,7 @@ let toastTimer = null;
 let lastFocusedElement = null;
 let firebaseApi = null;
 let audioCtx = null;
+let preTeacherSnapshot = null;
 
 // --- עזרי עוגיות ומזהה מכשיר קבוע (למניעת הגשות כפולות מאותו מכשיר) ---
 
@@ -787,6 +764,16 @@ function loadStateFromStorage() {
 }
 
 function saveLocalState() {
+  // במצב בדיקה למורה לא שומרים פרטים או נקודות בדפדפן, כדי שלא יישארו אחרי היציאה!
+  if (state.teacherMode) {
+    try {
+      localStorage.setItem(STORAGE_KEYS.SOUND_ENABLED, String(state.soundEnabled));
+    } catch {
+      // התעלמות שקטה
+    }
+    return;
+  }
+
   try {
     localStorage.setItem(STORAGE_KEYS.SOLVED, JSON.stringify(state.solvedMeta));
     localStorage.setItem(STORAGE_KEYS.SELECTED_CLASS, state.selectedClass);
@@ -1155,16 +1142,16 @@ function updateMascotSpeech() {
     speechEl.textContent =
       'בחרו את הכיתה שלכם, הכניסו את שמכם והתחילו לצבור נקודות לאליפות!';
   } else if (solved === 0) {
-    if (headingEl) headingEl.textContent = `יאללה ${firstName}, כיתה ${state.selectedClass} יוצאת לדרך! 🔥`;
+    if (headingEl) headingEl.textContent = `קדימה ${firstName}, כיתה ${state.selectedClass} יוצאת לדרך! 🚀`;
     speechEl.textContent = `חידה אחת מדויקת שווה עד ${
       CONFIG.pointsPerRiddle + CONFIG.firstTryBonus
     } נקודות לכיתה ומדבקת הישג ראשונה!`;
   } else if (solved < total) {
-    if (headingEl) headingEl.textContent = `כיתה ${state.selectedClass} על הגל! ✨`;
+    if (headingEl) headingEl.textContent = `כיתה ${state.selectedClass} בדרך לפסגה! ✨`;
     speechEl.textContent = `כל הכבוד ${firstName} — כבר פיצחת ${solved} מתוך ${total} חידות והבאת ${pts} נקודות לכיתה!`;
   } else {
     if (headingEl) headingEl.textContent = `אלופי העברית של הראל! 🏆`;
-    speechEl.textContent = `וואו ${firstName}! פיצחת את כל ${total} החידות והבאת ${pts} נקודות אדירות לכיתה ${state.selectedClass}!`;
+    speechEl.textContent = `הישג נפלא, ${firstName}! פיצחת את כל ${total} החידות והבאת ${pts} נקודות נהדרות לכיתה ${state.selectedClass}!`;
   }
 }
 
@@ -1728,12 +1715,12 @@ function openRiddleModal(riddleId) {
     emojiEl.textContent = '';
   }
 
-  // תזכורת למילוי שם מלא וכיתה אם טרם מולאו והחידה טרם נפתרה
+  // תזכורת למילוי שם מלא וכיתה אם טרם מולאו והחידה טרם נפתרה (במצב בדיקה למורה לא נדרש)
   if (modalClassPrompt) {
     const modalNameInput = document.getElementById('modal-student-name');
     if (modalNameInput) modalNameInput.value = state.certProfile.name;
 
-    if (!alreadySolved && (!state.selectedClass || !hasValidStudentName())) {
+    if (!state.teacherMode && !alreadySolved && (!state.selectedClass || !hasValidStudentName())) {
       renderModalClassChips();
       modalClassPrompt.hidden = false;
     } else {
@@ -1806,8 +1793,13 @@ function handleOptionSelect(riddle, chosenIndex, clickedBtn) {
   const hintArea = document.getElementById('modal-hint-area');
   const modalClassPrompt = document.getElementById('modal-class-prompt');
 
-  // מחייבים שם מלא + כיתה לפני זקיפת ניקוד (למניעת כפל ניקוד וגם להכנת התעודה)
-  if ((!state.selectedClass || !hasValidStudentName()) && chosenIndex === riddle.correctIndex && modalClassPrompt) {
+  // מחייבים שם מלא + כיתה לפני זקיפת ניקוד (רק לתלמידים; במצב בדיקה למורה אפשר לבדוק חופשי!)
+  if (
+    !state.teacherMode &&
+    (!state.selectedClass || !hasValidStudentName()) &&
+    chosenIndex === riddle.correctIndex &&
+    modalClassPrompt
+  ) {
     const modalNameInput = document.getElementById('modal-student-name');
     if (modalNameInput) modalNameInput.value = state.certProfile.name;
     renderModalClassChips();
@@ -1835,7 +1827,10 @@ function handleOptionSelect(riddle, chosenIndex, clickedBtn) {
     const bonusNote = state.activeRiddleHadWrongAttempt ? '' : ' (כולל +2 בונוס לניסיון ראשון!)';
 
     feedbackEl.className = 'feedback-box feedback-box--success';
-    feedbackEl.textContent = `${praise} +${earnedPoints} נקודות נוספו אוטומטית לכיתה ${state.selectedClass}${bonusNote}`;
+    feedbackEl.textContent =
+      state.teacherMode && !state.selectedClass
+        ? `${praise} (מצב בדיקה למורה — לא נרשמות נקודות בענן)`
+        : `${praise} +${earnedPoints} נקודות נוספו אוטומטית לכיתה ${state.selectedClass}${bonusNote}`;
     feedbackEl.hidden = false;
 
     dykTextEl.textContent = riddle.didYouKnow;
@@ -1850,7 +1845,7 @@ function handleOptionSelect(riddle, chosenIndex, clickedBtn) {
     };
     saveLocalState();
 
-    // שליחת ניקוד אוטומטית לכיתה (מקומי + Firebase / Google Sheets)
+    // שליחת ניקוד אוטומטית לכיתה (במצב בדיקה למורה לא נשלח לענן!)
     recordClassPoints({
       className: state.selectedClass,
       riddleId: riddle.id,
@@ -1874,7 +1869,7 @@ function handleOptionSelect(riddle, chosenIndex, clickedBtn) {
 
     playChime('error');
     feedbackEl.className = 'feedback-box feedback-box--error';
-    feedbackEl.textContent = 'אופס, כמעט! נסו שוב — אפשר גם להיעזר בכפתור הרמז למעלה 💡';
+    feedbackEl.textContent = 'כמעט! נסו שוב — אפשר גם להיעזר בכפתור הרמז למעלה 💡';
     feedbackEl.hidden = false;
   }
 }
@@ -2472,8 +2467,39 @@ function closeTeacherPinModal() {
 }
 
 function setTeacherMode(enabled) {
+  if (enabled && !state.teacherMode) {
+    // שמירת תמונת מצב לפני הבדיקה — כך שביציאה כל נתוני הבדיקה נמחקים אוטומטית
+    preTeacherSnapshot = {
+      solvedMeta: JSON.parse(JSON.stringify(state.solvedMeta)),
+      selectedClass: state.selectedClass,
+      classScores: JSON.parse(JSON.stringify(state.classScores)),
+      certProfile: { ...state.certProfile },
+    };
+  }
+
   state.teacherMode = enabled;
-  if (!enabled) state.teacherReportOpen = false;
+
+  if (!enabled) {
+    state.teacherReportOpen = false;
+    if (preTeacherSnapshot) {
+      state.solvedMeta = preTeacherSnapshot.solvedMeta;
+      state.selectedClass = preTeacherSnapshot.selectedClass;
+      if (!firebaseApi) {
+        state.classScores = preTeacherSnapshot.classScores;
+      }
+      state.certProfile = preTeacherSnapshot.certProfile;
+      preTeacherSnapshot = null;
+
+      const heroNameInput = document.getElementById('hero-student-name');
+      const modalNameInput = document.getElementById('modal-student-name');
+      const nameInput = document.getElementById('student-name-input');
+      const classInput = document.getElementById('student-class-input');
+      if (heroNameInput) heroNameInput.value = state.certProfile.name;
+      if (modalNameInput) modalNameInput.value = state.certProfile.name;
+      if (nameInput) nameInput.value = state.certProfile.name;
+      if (classInput) classInput.value = state.certProfile.className;
+    }
+  }
 
   const banner = document.getElementById('teacher-banner');
   const drawer = document.getElementById('teacher-report-drawer');
@@ -2488,15 +2514,21 @@ function setTeacherMode(enabled) {
   }
   if (footerResetBtn) footerResetBtn.hidden = !enabled;
 
+  closeRiddleModal();
   renderClassPicker();
+  renderProgressSummary();
   renderRoadmap();
+  renderBadgesShelf();
+  renderLeaderboard();
   renderPeakDaySection();
   renderTeacherReportTable();
+  updateMascotSpeech();
+  updateCertificatePreview();
 
   showToast(
     enabled
-      ? 'מצב בדיקה למורה הופעל — כל 7 הימים פתוחים (במצב זה לא נשלח ניקוד לענן).'
-      : 'חזרה למצב רגיל לפי תאריכי הפתיחה.'
+      ? 'מצב בדיקה למורה הופעל — כל 6 החידות ויום השיא פתוחים ללא שמירה (אפשר לבדוק חופשי בלי להירשם!).'
+      : 'יצאת ממצב בדיקה למורה — נתוני הבדיקה נוקו אוטומטית.'
   );
 }
 
@@ -2515,8 +2547,16 @@ function toggleTeacherReport(open) {
 function resetProgressForTesting() {
   state.solvedMeta = {};
   state.selectedClass = '';
-  state.classScores = createEmptyScoresMap();
+  if (!firebaseApi) {
+    state.classScores = createEmptyScoresMap();
+  }
   state.certProfile = { name: '', className: '', gender: 'female' };
+  preTeacherSnapshot = {
+    solvedMeta: {},
+    selectedClass: '',
+    classScores: createEmptyScoresMap(),
+    certProfile: { name: '', className: '', gender: 'female' },
+  };
 
   try {
     Object.values(STORAGE_KEYS).forEach((key) => {
