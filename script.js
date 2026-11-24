@@ -1420,23 +1420,33 @@ function renderRoadmap() {
     let statusHtml = '';
     let ptsHtml = '';
     let ctaHtml = '';
+    let cardTitle = '';
+    let cardDesc = '';
 
     if (!unlocked) {
       statusHtml = `<span class="day-card__status day-card__status--locked">${getLockSvg()}<span>ייפתח ב-${dateLabel}</span></span>`;
       ptsHtml = `<span class="day-card__pts">+${CONFIG.pointsPerRiddle} נק'</span>`;
       ctaHtml = `<span class="day-card__cta">${getLockSvg()}<span>נעול</span></span>`;
+      cardTitle = 'אתגר סודי';
+      cardDesc = `החידה תיחשף אוטומטית ב-${dateLabel} — יש למה לחכות!`;
     } else if (solved) {
       statusHtml = `<span class="day-card__status day-card__status--done">${getCheckSvg()}<span>הושלם!</span></span>`;
       ptsHtml = `<span class="day-card__pts">+${solvedEntry.points} נק' נצברו ✓</span>`;
       ctaHtml = `<span class="day-card__cta"><span>צפייה ב"הידעת?"</span>${getArrowLeftSvg()}</span>`;
+      cardTitle = riddle.category;
+      cardDesc = 'החידה נפתרה בהצלחה! לחצו כדי לצפות שוב בפתרון וב"הידעת?".';
     } else if (today) {
       statusHtml = `<span class="day-card__status day-card__status--today">🔥 פתוח היום!</span>`;
       ptsHtml = `<span class="day-card__pts">עד +${CONFIG.pointsPerRiddle + CONFIG.firstTryBonus} נק'</span>`;
-      ctaHtml = `<span class="day-card__cta"><span>לפתרון החידה</span>${getArrowLeftSvg()}</span>`;
+      ctaHtml = `<span class="day-card__cta"><span>לפתיחת החידה</span>${getArrowLeftSvg()}</span>`;
+      cardTitle = riddle.category;
+      cardDesc = 'לחצו כדי להיכנס לחידה היומית ולצבור נקודות לכיתה!';
     } else {
       statusHtml = `<span class="day-card__status day-card__status--open">פתוח</span>`;
       ptsHtml = `<span class="day-card__pts">עד +${CONFIG.pointsPerRiddle + CONFIG.firstTryBonus} נק'</span>`;
-      ctaHtml = `<span class="day-card__cta"><span>לפתרון החידה</span>${getArrowLeftSvg()}</span>`;
+      ctaHtml = `<span class="day-card__cta"><span>לפתיחת החידה</span>${getArrowLeftSvg()}</span>`;
+      cardTitle = riddle.category;
+      cardDesc = 'לחצו כדי להיכנס לחידה היומית ולצבור נקודות לכיתה!';
     }
 
     card.innerHTML = `
@@ -1451,8 +1461,8 @@ function renderRoadmap() {
           </div>
           ${statusHtml}
         </div>
-        <h3 class="day-card__topic">${riddle.category}</h3>
-        <p class="day-card__desc">${riddle.shortDesc}</p>
+        <h3 class="day-card__topic">${cardTitle}</h3>
+        <p class="day-card__desc">${cardDesc}</p>
       </div>
       <div class="day-card__bottom">
         ${ptsHtml}
