@@ -945,7 +945,7 @@ function updateMascotSpeech() {
   if (!state.selectedClass || !hasValidStudentName()) {
     if (headingEl) headingEl.textContent = 'מוכנים לאתגר העברית של הראל? 🚀';
     speechEl.textContent =
-      'בוחרים כיתה, מפצחים את חידת היום ולוקחים את הגביע הבית־ספרי!';
+      'בחרו את הכיתה שלכם, הכניסו את שמכם והתחילו לצבור נקודות לאליפות!';
   } else if (solved === 0) {
     if (headingEl) headingEl.textContent = `יאללה ${firstName}, כיתה ${state.selectedClass} יוצאת לדרך! 🔥`;
     speechEl.textContent = `חידה אחת מדויקת שווה עד ${
@@ -1055,8 +1055,7 @@ function renderClassPicker() {
     if (setupFields) setupFields.hidden = false;
     selectedBar.hidden = true;
     changeBtn.hidden = true;
-    titleEl.textContent =
-      '🏫 הירשמו לתחרות הכיתות (פעם אחת לכל השבוע — כדי שכל חידה תיספר בדיוק פעם אחת):';
+    titleEl.textContent = '🏫 בחרו את הכיתה שלכם, הכניסו שם מלא והתחילו לצבור נקודות:';
   }
 }
 
