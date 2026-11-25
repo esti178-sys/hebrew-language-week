@@ -700,45 +700,101 @@
         </button>
       </div>
 
+      <!-- לשוניות חלון היום: חידת היום + דקה של עברית -->
+      <div class="modal-tabs" role="tablist" aria-label="תוכן היום">
+        <button
+          type="button"
+          role="tab"
+          id="modal-tab-riddle"
+          class="modal-tab is-active"
+          aria-selected="true"
+          aria-controls="modal-panel-riddle"
+        >
+          🧩 חידת היום
+        </button>
+        <button
+          type="button"
+          role="tab"
+          id="modal-tab-story"
+          class="modal-tab"
+          aria-selected="false"
+          aria-controls="modal-panel-story"
+        >
+          📖 דקה של עברית
+        </button>
+      </div>
+
       <div class="modal-dialog__body">
-        <!-- תזכורת למילוי שם וכיתה אם עדיין לא מולאו -->
-        <div class="modal-class-prompt" id="modal-class-prompt" hidden>
-          <span class="modal-class-prompt__label">🏫 לפני צבירת הנקודות — מלאו שם מלא ובחרו כיתה (כדי שכל תלמיד/ה ייספרו פעם אחת):</span>
-          <input
-            type="text"
-            id="modal-student-name"
-            class="form-input modal-name-input"
-            placeholder="שם פרטי ושם משפחה"
-            maxlength="40"
-          />
-          <div class="class-chips class-chips--compact" id="modal-class-chips"></div>
-        </div>
-
-        <div class="modal-illustration" id="modal-illustration" hidden aria-hidden="true"></div>
-        <h3 class="modal-question" id="modal-title"></h3>
-        <div class="modal-emoji-clue" id="modal-emoji-clue" hidden aria-label="רמז באימוג'ים"></div>
-
-        <!-- כפתור רמז ידידותי -->
-        <div class="hint-area" id="modal-hint-area">
-          <button type="button" class="hint-btn" id="modal-hint-btn" aria-expanded="false">
-            💡 צריכים רמז קטן?
-          </button>
-          <p class="hint-box" id="modal-hint-text" hidden></p>
-        </div>
-
-        <div class="options-list" id="modal-options" role="group" aria-label="אפשרויות תשובה">
-          <!-- יאוכלס דינמית על ידי script.js -->
-        </div>
-
-        <div class="feedback-box" id="modal-feedback" hidden role="status" aria-live="polite"></div>
-
-        <div class="did-you-know" id="modal-dyk" hidden>
-          <div class="did-you-know__head">
-            <span aria-hidden="true">💡</span>
-            <strong>הידעת?</strong>
-            <span class="did-you-know__badge" id="modal-unlocked-badge"></span>
+        <div id="modal-panel-riddle" role="tabpanel" aria-labelledby="modal-tab-riddle">
+          <!-- תזכורת למילוי שם וכיתה אם עדיין לא מולאו -->
+          <div class="modal-class-prompt" id="modal-class-prompt" hidden>
+            <span class="modal-class-prompt__label">🏫 לפני צבירת הנקודות — מלאו שם מלא ובחרו כיתה (כדי שכל תלמיד/ה ייספרו פעם אחת):</span>
+            <input
+              type="text"
+              id="modal-student-name"
+              class="form-input modal-name-input"
+              placeholder="שם פרטי ושם משפחה"
+              maxlength="40"
+            />
+            <div class="class-chips class-chips--compact" id="modal-class-chips"></div>
           </div>
-          <p class="did-you-know__text" id="modal-dyk-text"></p>
+
+          <div class="modal-illustration" id="modal-illustration" hidden aria-hidden="true"></div>
+          <h3 class="modal-question" id="modal-title"></h3>
+          <div class="modal-emoji-clue" id="modal-emoji-clue" hidden aria-label="רמז באימוג'ים"></div>
+
+          <!-- כפתור רמז ידידותי -->
+          <div class="hint-area" id="modal-hint-area">
+            <button type="button" class="hint-btn" id="modal-hint-btn" aria-expanded="false">
+              💡 צריכים רמז קטן?
+            </button>
+            <p class="hint-box" id="modal-hint-text" hidden></p>
+          </div>
+
+          <div class="options-list" id="modal-options" role="group" aria-label="אפשרויות תשובה">
+            <!-- יאוכלס דינמית על ידי script.js -->
+          </div>
+
+          <div class="feedback-box" id="modal-feedback" hidden role="status" aria-live="polite"></div>
+
+          <div class="did-you-know" id="modal-dyk" hidden>
+            <div class="did-you-know__head">
+              <span aria-hidden="true">💡</span>
+              <strong>הידעת?</strong>
+              <span class="did-you-know__badge" id="modal-unlocked-badge"></span>
+            </div>
+            <p class="did-you-know__text" id="modal-dyk-text"></p>
+            <button type="button" class="dyk-story-cta" id="modal-go-story-btn">
+              📖 רוצים להעשיר את הידע? קראו את "דקה של עברית" של היום ←
+            </button>
+          </div>
+        </div>
+
+        <!-- לשונית "דקה של עברית" — קטע מידע מרתק ליום זה -->
+        <div id="modal-panel-story" class="story-panel" role="tabpanel" aria-labelledby="modal-tab-story" hidden>
+          <div class="story-card">
+            <div class="story-card__meta">
+              <span class="story-card__kicker" id="story-kicker">📖 דקה של עברית · קריאה של 30 שניות</span>
+            </div>
+            <h3 class="story-card__title" id="story-title"></h3>
+            <div class="story-card__body" id="story-paragraphs"></div>
+
+            <div class="story-box story-box--fact">
+              <strong class="story-box__label">✨ עובדת השיא</strong>
+              <p class="story-box__text" id="story-highlight-text"></p>
+            </div>
+
+            <div class="story-box story-box--talk">
+              <strong class="story-box__label">💬 שאלה לשיחה בכיתה או בבית</strong>
+              <p class="story-box__text" id="story-discussion-text"></p>
+            </div>
+
+            <div class="story-card__actions">
+              <button type="button" class="btn btn--primary btn--sm" id="story-back-riddle-btn">
+                🧩 מעבר לחידת היום
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

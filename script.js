@@ -398,6 +398,76 @@ const CONFIG = {
     },
   ],
 
+  // --- 8ב. קטעי מידע יומיים ("דקה של עברית") לכל אחד מ-6 הימים ---
+  dailyStories: {
+    1: {
+      title: 'הנס היחיד בהיסטוריה: איך העברית קמה לתחייה?',
+      paragraphs: [
+        'במשך כמעט 2,000 שנה העברית כמעט לא נשמעה ברחובות — אנשים קראו בה בתפילה ובספרים, אך בבית דיברו שפות אחרות. לפני כ-140 שנה החליט אליעזר בן-יהודה לשנות את ההיסטוריה ולהפוך את העברית שוב לשפת יומיום חיה.',
+        'כדי להוכיח שזה אפשרי, הוא ואשתו דבורה גידלו את בנם איתמר בן-אב"י כילד הראשון בעת החדשה ששמע ודיבר אך ורק עברית. כשחסרו מילים לחיי היומיום — כמו גלידה, בובה, מטרייה או עיתון — בן-יהודה פשוט חידש אותן!',
+      ],
+      highlight:
+        'העברית היא השפה היחידה בעולם שהפסיקה להיות מדוברת ביומיום במשך מאות שנים — וחזרה בהצלחה להיות שפת אם של מיליוני אנשים.',
+      discussion:
+        'אילו מילים חדשות מהחיים שלכם הייתם חייבים להמציא מיד, אילו הייתם גדלים בבית שבו עדיין אין מילים עבריות לעולם המודרני?',
+    },
+    2: {
+      title: 'מילים עבריות שכבשו את האנגלית ואת העולם!',
+      paragraphs: [
+        'לפעמים נדמה לנו שרק העברית שואלת מילים מאנגלית — אבל האמת מפתיעה הרבה יותר: עשרות מילים עבריות עתיקות עשו את הדרך ההפוכה ונטמעו עמוק בשפות העולם.',
+        'כך, למשל, המילה האנגלית Camel נולדה מהמילה העברית גָּמָל, המילה Cinnamon הגיעה מקִנָּמוֹן, המילה Sabbath מקורה בשַׁבָּת, ואפילו המילים Amen (אָמֵן) ו-Jubilee (יוֹבֵל) עברו מהתנ"ך היישר לשפה הבינלאומית.',
+      ],
+      highlight:
+        'גם המילה האנגלית Alphabet (אלפבית) מגיעה משתי האותיות הראשונות של השפות השמיות העתיקות — אלף ובית!',
+      discussion:
+        'מכירים עוד מילה באנגלית או בשפה אחרת שנשמעת דומה מאוד למילה בעברית? נסו לגלות יחד מאיזו שפה היא התחילה.',
+    },
+    3: {
+      title: 'מאחורי הקלעים של האקדמיה ללשון העברית',
+      paragraphs: [
+        'איך נולדת מילה תקנית חדשה בישראל? ועדות של חוקרי לשון, סופרים ומומחים בודקות מה חסר בשיח היומיומי, ובונות מילים חדשות לפי שורשים ומשקלים — או בחיבור חכם של שתי מילים יחד (הלחם בסיסים), כמו "כדור" + "רגל" = כַּדּוּרֶגֶל או "רכב" + "כבל" = רַכֶּבֶל.',
+        'לא כל מילה שממציאים תופסת: מילים כמו "מחשב", "קלטת" ו"מרפסת" הפכו לחלק טבעי מחיינו, בעוד שההצעה "שח-רחוק" לטלפון נשארה בעיקר בספרי ההיסטוריה — ובסוף הציבור הוא שמכריע.',
+      ],
+      highlight:
+        'כל תלמיד ותלמידה בישראל יכולים לשלוח הצעה למילה עברית חדשה באתר האקדמיה ללשון — וחלק מהחידושים המפורסמים ביותר הגיעו דווקא מילדים ונוער!',
+      discussion:
+        'איזו מילה לועזית שאתם משתמשים בה בכל יום הייתם שמחים להחליף במילה עברית קליטה וחדשה?',
+    },
+    4: {
+      title: 'הלגו הגאוני של השפה העברית: קסם השורשים',
+      paragraphs: [
+        'העברית נחשבת לאחת השפות החכמות והחסכוניות בעולם בזכות שיטת השורשים שלה. במקום לשנן מילים שונות לגמרי לכל רעיון, לוקחים שלוש אותיות שורש ומלבישים אותן בתבניות שונות — ממש כמו קוביות לגו.',
+        'קחו לדוגמה את השורש כ-ת-ב: ממנו נוצרות המילים כָּתַב, מִכְתָּב, כְּתֹבֶת, כַּתָּבָה, כְּתִיבָה, הִתְכַּתְּבוּת ומַכְתֵּבָה. גם אם פוגשים מילה עברית בפעם הראשונה בחיים, אפשר לזהות את השורש שלה ולנחש מיד למה היא קשורה!',
+      ],
+      highlight:
+        'משורש עברי אחד בן שלוש אותיות בלבד אפשר לבנות לעיתים יותר מ-30 מילים שונות בעלות קשר משפחתי ברור.',
+      discussion:
+        'נסו תחרות בזק בכיתה: כמה מילים אמיתיות תצליחו למצוא בתוך 30 שניות מהשורש ס-פ-ר או ל-מ-ד?',
+    },
+    5: {
+      title: 'מילים מהתנ"ך שקיבלו חיים חדשים בעידן הטכנולוגי',
+      paragraphs: [
+        'כשאנחנו משתמשים היום במילים מעולם המדע והטכנולוגיה, קשה להאמין שרבות מהן נכתבו כבר לפני אלפי שנים. מחדשי השפה העברית פתחו את התנ"ך, מצאו מילים נדירות ומדויקות והעניקו להן משמעות מודרנית.',
+        'המילה "חַשְׁמַל", למשל, מופיעה כבר בספר יחזקאל לתיאור אור זוהר ומסתורי; המילה "תּוֹתָח" מופיעה בספר איוב; והמילה "מְכוֹנִית" נגזרה מהמילה המקראית "מְכוֹנָה" ששימשה לתיאור עגלה מיוחדת על גלגלים.',
+      ],
+      highlight:
+        'בזכות החיבור הזה, תלמיד בכיתה ה\' בבית ספר הראל מסוגל לקרוא היום מגילות עתיקות בנות יותר מ-2,000 שנה ולהבין חלק גדול מהמילים בהן!',
+      discussion:
+        'איזו מילה מודרנית מהטלפון או מהמחשב מפתיע אתכם לדעת שמתבססת על מילה עברית עתיקה?',
+    },
+    6: {
+      title: 'הסיפורים המפתיעים מאחורי הביטויים שלנו',
+      paragraphs: [
+        'העברית מלאה בביטויים ציוריים שאנחנו אומרים כמעט בלי לחשוב על מקורם. כשאומרים "על קצה המזלג" מתכוונים לטעימה קצרצרה בלבד — ממש כמו כמות זעירה שנאחזת בקצה המזלג.',
+        'והביטוי "יצא המרצע מן השק"? מַרְצֵעַ הוא כלי חד של סנדלרים; אם מנסים להחביא אותו בתוך שק בד, החוד הדק מנקב את השק ויוצא החוצה — ולכן משתמשים בביטוי כשסוד מתגלה לפתע.',
+      ],
+      highlight:
+        'והפתעה קטנה לסיום השבוע: למרות הביטוי המפורסם "טמן את ראשו בחול", יענים בטבע כלל לא טומנות את הראש בחול — הן רק מתכופפות להפוך את הביצים שלהן בקן!',
+      discussion:
+        'איזה ביטוי עברי אהוב עליכם במיוחד, ואיך הייתם מציירים אותו כחידת איור לחברים?',
+    },
+  },
+
   // --- 9. כרטיסיות "מילת היום" המתהפכות (חידושי האקדמיה ללשון העברית) ---
   wordsOfTheDay: [
     {
@@ -1495,21 +1565,21 @@ function renderRoadmap() {
     } else if (solved) {
       statusHtml = `<span class="day-card__status day-card__status--done">${getCheckSvg()}<span>הושלם!</span></span>`;
       ptsHtml = `<span class="day-card__pts">+${solvedEntry.points} נק' נצברו ✓</span>`;
-      ctaHtml = `<span class="day-card__cta"><span>צפייה ב"הידעת?"</span>${getArrowLeftSvg()}</span>`;
+      ctaHtml = `<span class="day-card__cta"><span>לחידה ול"דקה של עברית"</span>${getArrowLeftSvg()}</span>`;
       cardTitle = riddle.category;
-      cardDesc = 'החידה נפתרה בהצלחה! לחצו כדי לצפות שוב בפתרון וב"הידעת?".';
+      cardDesc = 'החידה נפתרה בהצלחה! לחצו כדי לצפות שוב בפתרון ולקרוא את "דקה של עברית".';
     } else if (today) {
       statusHtml = `<span class="day-card__status day-card__status--today">🔥 פתוח היום!</span>`;
       ptsHtml = `<span class="day-card__pts">עד +${CONFIG.pointsPerRiddle + CONFIG.firstTryBonus} נק'</span>`;
-      ctaHtml = `<span class="day-card__cta"><span>לפתיחת החידה</span>${getArrowLeftSvg()}</span>`;
+      ctaHtml = `<span class="day-card__cta"><span>לפתיחת אתגר היום</span>${getArrowLeftSvg()}</span>`;
       cardTitle = riddle.category;
-      cardDesc = 'לחצו כדי להיכנס לחידה היומית ולצבור נקודות לכיתה!';
+      cardDesc = 'לחצו כדי לפתור את החידה היומית ולקרוא את "דקה של עברית"!';
     } else {
       statusHtml = `<span class="day-card__status day-card__status--open">פתוח</span>`;
       ptsHtml = `<span class="day-card__pts">עד +${CONFIG.pointsPerRiddle + CONFIG.firstTryBonus} נק'</span>`;
-      ctaHtml = `<span class="day-card__cta"><span>לפתיחת החידה</span>${getArrowLeftSvg()}</span>`;
+      ctaHtml = `<span class="day-card__cta"><span>לפתיחת אתגר היום</span>${getArrowLeftSvg()}</span>`;
       cardTitle = riddle.category;
-      cardDesc = 'לחצו כדי להיכנס לחידה היומית ולצבור נקודות לכיתה!';
+      cardDesc = 'לחצו כדי לפתור את החידה היומית ולקרוא את "דקה של עברית"!';
     }
 
     card.innerHTML = `
@@ -1940,11 +2010,72 @@ function openRiddleModal(riddleId) {
     updateWhatsappShareButton(null, 0, '');
   }
 
+  renderDailyStory(riddle);
+  setRiddleModalTab('riddle');
+
   modal.hidden = false;
   document.body.style.overflow = 'hidden';
 
   const closeBtn = document.getElementById('modal-close-btn');
   if (closeBtn) closeBtn.focus();
+}
+
+function renderDailyStory(riddle) {
+  const story = CONFIG.dailyStories?.[riddle.id];
+  const kickerEl = document.getElementById('story-kicker');
+  const titleEl = document.getElementById('story-title');
+  const bodyEl = document.getElementById('story-paragraphs');
+  const highlightEl = document.getElementById('story-highlight-text');
+  const discussionEl = document.getElementById('story-discussion-text');
+  const backBtn = document.getElementById('story-back-riddle-btn');
+
+  if (!story) return;
+
+  if (kickerEl) kickerEl.textContent = `📖 דקה של עברית · ${riddle.dayLabel} · קריאה של 30 שניות`;
+  if (titleEl) titleEl.textContent = story.title;
+  if (bodyEl) {
+    bodyEl.innerHTML = '';
+    story.paragraphs.forEach((paraText) => {
+      const p = document.createElement('p');
+      p.textContent = paraText;
+      bodyEl.appendChild(p);
+    });
+  }
+  if (highlightEl) highlightEl.textContent = story.highlight;
+  if (discussionEl) discussionEl.textContent = story.discussion;
+  if (backBtn) {
+    const isSolved = Boolean(state.solvedMeta[riddle.id]);
+    backBtn.textContent = isSolved ? '🧩 חזרה לפתרון החידה' : '🧩 מעבר לחידת היום';
+  }
+}
+
+function setRiddleModalTab(tab) {
+  const isStory = tab === 'story';
+  const riddleTab = document.getElementById('modal-tab-riddle');
+  const storyTab = document.getElementById('modal-tab-story');
+  const riddlePanel = document.getElementById('modal-panel-riddle');
+  const storyPanel = document.getElementById('modal-panel-story');
+  const dialog = document.querySelector('#riddle-modal .modal-dialog');
+
+  if (riddleTab) {
+    riddleTab.classList.toggle('is-active', !isStory);
+    riddleTab.setAttribute('aria-selected', String(!isStory));
+  }
+  if (storyTab) {
+    storyTab.classList.toggle('is-active', isStory);
+    storyTab.setAttribute('aria-selected', String(isStory));
+  }
+  if (riddlePanel) riddlePanel.hidden = isStory;
+  if (storyPanel) storyPanel.hidden = !isStory;
+  if (dialog) dialog.scrollTop = 0;
+
+  if (isStory && state.activeRiddleId) {
+    const backBtn = document.getElementById('story-back-riddle-btn');
+    if (backBtn) {
+      const isSolved = Boolean(state.solvedMeta[state.activeRiddleId]);
+      backBtn.textContent = isSolved ? '🧩 חזרה לפתרון החידה' : '🧩 מעבר לחידת היום';
+    }
+  }
 }
 
 function updateWhatsappShareButton(riddle, earnedPoints, className) {
@@ -3144,15 +3275,23 @@ function bindEvents() {
     });
   }
 
-  // מודאל חידה ורמז
+  // מודאל חידה ורמז + לשונית "דקה של עברית"
   const modal = document.getElementById('riddle-modal');
   const closeBtn = document.getElementById('modal-close-btn');
   const doneBtn = document.getElementById('modal-done-btn');
   const hintBtn = document.getElementById('modal-hint-btn');
   const hintText = document.getElementById('modal-hint-text');
+  const modalTabRiddle = document.getElementById('modal-tab-riddle');
+  const modalTabStory = document.getElementById('modal-tab-story');
+  const modalGoStoryBtn = document.getElementById('modal-go-story-btn');
+  const storyBackRiddleBtn = document.getElementById('story-back-riddle-btn');
 
   if (closeBtn) closeBtn.addEventListener('click', closeRiddleModal);
   if (doneBtn) doneBtn.addEventListener('click', closeRiddleModal);
+  if (modalTabRiddle) modalTabRiddle.addEventListener('click', () => setRiddleModalTab('riddle'));
+  if (modalTabStory) modalTabStory.addEventListener('click', () => setRiddleModalTab('story'));
+  if (modalGoStoryBtn) modalGoStoryBtn.addEventListener('click', () => setRiddleModalTab('story'));
+  if (storyBackRiddleBtn) storyBackRiddleBtn.addEventListener('click', () => setRiddleModalTab('riddle'));
   if (modal) {
     modal.addEventListener('click', (event) => {
       if (event.target === modal) closeRiddleModal();
