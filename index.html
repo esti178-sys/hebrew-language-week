@@ -118,7 +118,12 @@
     </div>
 
     <div class="container hero__top-bar">
-      <p class="hero__eyebrow" id="school-eyebrow">חגיגת השפה העברית · כיתות ה'–ח'</p>
+      <div class="hero__brand">
+        <span class="school-logo-pill">
+          <img src="harel-logo.png" alt='סמל בית הספר הממלכתי קהילתי "הראל" לוד' class="school-logo-img" />
+        </span>
+        <p class="hero__eyebrow" id="school-eyebrow">בית ספר הראל · חגיגת השפה העברית (כיתות ה'–ח')</p>
+      </div>
       <button
         type="button"
         id="sound-toggle-btn"
@@ -606,12 +611,13 @@
                 <article class="certificate" id="certificate-preview" aria-label="תצוגה מקדימה של תעודת אלוף או אלופת העברית">
                   <div class="certificate__outer-frame">
                     <div class="certificate__inner-frame">
-                      <div class="certificate__emblem" aria-hidden="true">
-                        <svg viewBox="0 0 64 64" fill="none">
-                          <circle cx="32" cy="32" r="28" stroke="#D49A1A" stroke-width="2.2" fill="#FEF9E7"></circle>
-                          <circle cx="32" cy="32" r="22" stroke="#0E2A47" stroke-width="1.2" stroke-dasharray="3 3"></circle>
-                          <text x="32" y="41" text-anchor="middle" fill="#0E2A47" font-family="Frank Ruhl Libre, serif" font-size="28" font-weight="900">ע</text>
-                        </svg>
+                      <div class="certificate__emblem">
+                        <img
+                          src="harel-logo.png"
+                          alt='סמל בית ספר הראל לוד'
+                          class="certificate__logo-img"
+                          id="cert-logo-img"
+                        />
                       </div>
 
                       <p class="certificate__kicker" id="cert-school-name">שבוע השפה העברית · בית ספר הראל</p>
@@ -652,9 +658,12 @@
   <!-- תחתית העמוד + כפתור מוצנע למצב בדיקה למורה -->
   <footer class="site-footer">
     <div class="container site-footer__inner">
-      <p class="site-footer__copy">
-        שבוע השפה העברית · בית ספר הראל · כיתות ה'–ח'
-      </p>
+      <div class="site-footer__brand">
+        <img src="harel-logo.png" alt='סמל בית ספר הראל לוד' class="site-footer__logo" />
+        <p class="site-footer__copy">
+          שבוע השפה העברית · ביה"ס הממלכתי קהילתי "הראל" לוד · כיתות ה'–ח'
+        </p>
+      </div>
 
       <div class="teacher-controls">
         <button type="button" id="teacher-mode-btn" class="teacher-trigger" aria-pressed="false">
@@ -800,9 +809,14 @@
   >
     <div class="board-overlay__inner">
       <header class="board-overlay__header">
-        <div>
-          <span class="board-overlay__kicker">שבוע השפה העברית · בית ספר הראל · שידור חי</span>
-          <h2 id="board-mode-title" class="board-overlay__title">🏆 אליפות הכיתות בשפה העברית</h2>
+        <div class="board-overlay__brand">
+          <span class="school-logo-pill school-logo-pill--lg">
+            <img src="harel-logo.png" alt='סמל בית ספר הראל לוד' class="school-logo-img" />
+          </span>
+          <div>
+            <span class="board-overlay__kicker">שבוע השפה העברית · בית ספר הראל לוד · שידור חי</span>
+            <h2 id="board-mode-title" class="board-overlay__title">🏆 אליפות הכיתות בשפה העברית</h2>
+          </div>
         </div>
 
         <div class="board-overlay__controls">
@@ -843,7 +857,8 @@
 
       <div class="modal-dialog__body">
         <div class="qr-poster-card" id="qr-poster-printable">
-          <span class="qr-poster-card__kicker">בית ספר הראל · כיתות ה'–ח'</span>
+          <img src="harel-logo.png" alt='סמל בית ספר הראל לוד' class="qr-poster-card__logo" />
+          <span class="qr-poster-card__kicker">בית ספר הראל לוד · כיתות ה'–ח'</span>
           <h4 class="qr-poster-card__title">שבוע השפה העברית</h4>
           <p class="qr-poster-card__sub">17.12 – 24.12 · 6 חידות יומיות · אליפות 20 הכיתות · יום שיא חגיגי!</p>
 

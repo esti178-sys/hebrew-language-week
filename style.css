@@ -3208,11 +3208,78 @@ input {
   margin-bottom: 0.35rem;
 }
 
+.qr-poster-card__logo {
+  display: block;
+  width: 68px;
+  height: auto;
+  margin: 0 auto 0.55rem;
+}
+
 .qr-poster-card__url {
   font-size: 0.86rem;
   font-weight: 700;
   color: var(--sky-600);
   direction: ltr;
+}
+
+/* לוגו בית ספר הראל לוד — כותרת, תעודה, מסך הקרנה ותחתית */
+.hero__brand,
+.board-overlay__brand,
+.site-footer__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.school-logo-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  padding: 5px;
+  border-radius: 14px;
+  background-color: #ffffff;
+  border: 2px solid var(--mustard-400);
+  box-shadow: 0 6px 16px rgba(8, 30, 54, 0.25);
+  flex-shrink: 0;
+}
+
+.school-logo-pill--lg {
+  width: 66px;
+  height: 66px;
+  padding: 6px;
+  border-radius: 16px;
+}
+
+.school-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.certificate__emblem {
+  width: 56px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.certificate__logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.site-footer__logo {
+  width: 34px;
+  height: 42px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
 }
 
 /* ==========================================================================

@@ -2490,26 +2490,49 @@ async function downloadCertificatePng() {
   });
 
   const emblemX = width / 2;
-  const emblemY = 175;
-  ctx.beginPath();
-  ctx.arc(emblemX, emblemY, 56, 0, Math.PI * 2);
-  ctx.fillStyle = '#fef5d4';
-  ctx.fill();
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = '#d49a1a';
-  ctx.stroke();
+  const emblemY = 172;
+  let drewLogo = false;
+  try {
+    const logoImg = new Image();
+    logoImg.src = 'harel-logo.png';
+    await new Promise((resolve, reject) => {
+      if (logoImg.complete && logoImg.naturalWidth > 0) resolve();
+      else {
+        logoImg.onload = resolve;
+        logoImg.onerror = reject;
+      }
+    });
+    const maxLogoH = 136;
+    const ratio = logoImg.naturalWidth / logoImg.naturalHeight;
+    const drawH = maxLogoH;
+    const drawW = drawH * ratio;
+    ctx.drawImage(logoImg, emblemX - drawW / 2, emblemY - drawH / 2, drawW, drawH);
+    drewLogo = true;
+  } catch {
+    drewLogo = false;
+  }
 
-  ctx.beginPath();
-  ctx.setLineDash([6, 6]);
-  ctx.arc(emblemX, emblemY, 44, 0, Math.PI * 2);
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = '#0e2a47';
-  ctx.stroke();
-  ctx.setLineDash([]);
+  if (!drewLogo) {
+    ctx.beginPath();
+    ctx.arc(emblemX, emblemY, 56, 0, Math.PI * 2);
+    ctx.fillStyle = '#fef5d4';
+    ctx.fill();
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = '#d49a1a';
+    ctx.stroke();
 
-  ctx.fillStyle = '#0e2a47';
-  ctx.font = '900 56px "Frank Ruhl Libre", Georgia, serif';
-  ctx.fillText('ע', emblemX, emblemY + 5);
+    ctx.beginPath();
+    ctx.setLineDash([6, 6]);
+    ctx.arc(emblemX, emblemY, 44, 0, Math.PI * 2);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#0e2a47';
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#0e2a47';
+    ctx.font = '900 56px "Frank Ruhl Libre", Georgia, serif';
+    ctx.fillText('ע', emblemX, emblemY + 5);
+  }
 
   ctx.fillStyle = '#0284c7';
   ctx.font = '700 28px "Heebo", sans-serif';
@@ -2786,6 +2809,7 @@ function closeQrPosterModal() {
 function printQrPoster() {
   const svgContainer = document.getElementById('qr-svg-container');
   const qrSvgMarkup = svgContainer ? svgContainer.innerHTML : '';
+  const logoUrl = new URL('harel-logo.png', window.location.href).href;
   const win = window.open('', '_blank', 'width=850,height=1100');
   if (!win) {
     showToast('הדפדפן חסם את חלון ההדפסה — אנא אפשרו חלונות קופצים ונסו שוב.');
@@ -2799,7 +2823,7 @@ function printQrPoster() {
   <title>כרזת QR — שבוע השפה העברית · בית ספר הראל</title>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@500;700;800;900&display=swap" rel="stylesheet" />
   <style>
-    @page { size: A4 portrait; margin: 14mm; }
+    @page { size: A4 portrait; margin: 12mm; }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     body {
       font-family: 'Heebo', Arial, sans-serif;
@@ -2809,61 +2833,67 @@ function printQrPoster() {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 10mm;
+      padding: 8mm;
     }
     .poster {
       width: 100%;
       max-width: 175mm;
       border: 4px solid #0e2a47;
       border-radius: 26px;
-      padding: 16mm 14mm;
+      padding: 13mm 14mm;
       text-align: center;
       background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 55%, #fffbeb 100%);
+    }
+    .school-logo {
+      display: block;
+      width: 28mm;
+      height: auto;
+      margin: 0 auto 5mm;
     }
     .kicker {
       display: inline-block;
       background: #f5c443;
       color: #081e36;
-      font-size: 16pt;
+      font-size: 15pt;
       font-weight: 900;
-      padding: 6px 24px;
+      padding: 5px 22px;
       border-radius: 999px;
-      margin-bottom: 10mm;
+      margin-bottom: 6mm;
     }
     h1 {
-      font-size: 40pt;
+      font-size: 38pt;
       font-weight: 900;
       color: #0e2a47;
-      margin-bottom: 5mm;
+      margin-bottom: 4mm;
       line-height: 1.1;
     }
     .sub {
-      font-size: 16pt;
+      font-size: 15pt;
       font-weight: 700;
       color: #334155;
-      margin-bottom: 12mm;
+      margin-bottom: 9mm;
     }
     .qr-box {
-      width: 92mm;
-      height: 92mm;
-      margin: 0 auto 10mm;
-      padding: 6mm;
+      width: 86mm;
+      height: 86mm;
+      margin: 0 auto 8mm;
+      padding: 5mm;
       background: #ffffff;
       border: 4px solid #0ea5e9;
       border-radius: 22px;
     }
     .qr-box svg { width: 100%; height: 100%; display: block; }
     .cta {
-      font-size: 20pt;
+      font-size: 19pt;
       font-weight: 900;
       color: #0e2a47;
-      margin-bottom: 4mm;
+      margin-bottom: 3.5mm;
     }
     .steps {
       font-size: 13pt;
       color: #475569;
-      margin-bottom: 8mm;
-      line-height: 1.6;
+      margin-bottom: 6mm;
+      line-height: 1.55;
     }
     .url {
       font-size: 13pt;
@@ -2875,7 +2905,8 @@ function printQrPoster() {
 </head>
 <body>
   <div class="poster">
-    <span class="kicker">בית ספר הראל · כיתות ה'–ח'</span>
+    <img src="${logoUrl}" alt='סמל בית ספר הראל לוד' class="school-logo" />
+    <span class="kicker">בית ספר הראל לוד · כיתות ה'–ח'</span>
     <h1>שבוע השפה העברית</h1>
     <p class="sub">17.12 – 24.12 · 6 חידות יומיות · אליפות 20 הכיתות · יום שיא חגיגי!</p>
     <div class="qr-box">${qrSvgMarkup}</div>
