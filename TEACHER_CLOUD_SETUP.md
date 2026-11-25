@@ -19,6 +19,7 @@
 const TEACHER_EMAIL = 'your-email@gmail.com';
 const SHEET_NAME = 'Submissions';
 const BLOCKED_SHEET_NAME = 'BlockedDuplicates';
+const INVENTED_SHEET_NAME = 'InventedWords';
 
 function getOrCreateSheet(name, headers) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -30,11 +31,41 @@ function getOrCreateSheet(name, headers) {
   return sheet;
 }
 
-// מקבל כל פתרון מהאתר, בודק כפילויות לפי מכשיר + שם תלמיד/ה לאותו יום, ורושם רק הגשה ראשונה!
+// מקבל גם פתרונות יומיים וגם המצאות מילים מיום השיא!
 function doPost(e) {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
+    const data = JSON.parse(e.postData.contents);
+
+    // א. שמירת מילה חדשה מאתגר יום השיא ("ממציאים מילה חדשה לבית ספר הראל")
+    if (data.type === 'inventedWord') {
+      const wordsSheet = getOrCreateSheet(INVENTED_SHEET_NAME, [
+        'תאריך',
+        'שעה',
+        'כיתה',
+        'שם תלמיד/ה',
+        'המילה החדשה',
+        'פירוש המילה',
+        'משפט לדוגמה',
+        'מזהה מכשיר',
+      ]);
+      wordsSheet.appendRow([
+        data.dateIso || '',
+        data.timeStr || '',
+        data.className || 'ללא כיתה',
+        data.studentName || 'תלמיד/ה',
+        data.word || '',
+        data.meaning || '',
+        data.example || '',
+        String(data.deviceId || '').trim(),
+      ]);
+      return ContentService.createTextOutput(JSON.stringify({ ok: true, savedWord: true })).setMimeType(
+        ContentService.MimeType.JSON
+      );
+    }
+
+    // ב. שמירת פתרון חידה יומית עם בדיקת כפילויות לפי מכשיר + שם תלמיד/ה
     const sheet = getOrCreateSheet(SHEET_NAME, [
       'תאריך',
       'שעה',
@@ -47,12 +78,10 @@ function doPost(e) {
       'מזהה תלמיד',
     ]);
 
-    const data = JSON.parse(e.postData.contents);
     const riddleId = Number(data.riddleId) || 1;
     const deviceId = String(data.deviceId || '').trim();
     const studentKey = String(data.studentKey || '').trim();
 
-    // בדיקת כפילויות מול כל ההגשות הקיימות לאותו יום חידה
     const existingRows = sheet.getDataRange().getValues().slice(1);
     const isDuplicate = existingRows.some((row) => {
       const sameDay = Number(row[3]) === riddleId;
@@ -128,15 +157,57 @@ function doGet() {
     const pts = Number(row[6]) || 0;
     if (!cls) return;
     if (!scores[cls]) {
-      scores[cls] = { total: 0, byDay: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 } };
+      scores[cls] = {
+        total: 0,
+        solves: 0,
+        byDay: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 },
+        solvesByDay: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 },
+      };
     }
     scores[cls].total += pts;
+    scores[cls].solves += 1;
     scores[cls].byDay[dayId] = (scores[cls].byDay[dayId] || 0) + pts;
+    scores[cls].solvesByDay[dayId] = (scores[cls].solvesByDay[dayId] || 0) + 1;
   });
 
   return ContentService.createTextOutput(JSON.stringify({ scores })).setMimeType(
     ContentService.MimeType.JSON
   );
+}
+
+// שולח אלייך מייל מרוכז עם כל המילים החדשות שהתלמידים המציאו ביום השיא!
+function sendInventedWordsEmailToTeacher() {
+  const wordsSheet = getOrCreateSheet(INVENTED_SHEET_NAME, [
+    'תאריך',
+    'שעה',
+    'כיתה',
+    'שם תלמיד/ה',
+    'המילה החדשה',
+    'פירוש המילה',
+    'משפט לדוגמה',
+    'מזהה מכשיר',
+  ]);
+  const rows = wordsSheet.getDataRange().getValues().slice(1);
+
+  const listText = rows.length
+    ? rows
+        .map((r, i) => {
+          const exampleLine = r[6] ? ` | דוגמה: "${r[6]}"` : '';
+          return `${i + 1}. "${r[4]}" — ${r[5]}${exampleLine} (${r[3]}, כיתה ${r[2]})`;
+        })
+        .join('\n')
+    : 'עדיין לא נשלחו מילים חדשות.';
+
+  const body =
+    `שלום! הנה רשימת כל המילים החדשות שתלמידי בית ספר הראל המציאו (${rows.length} הגשות):\n\n` +
+    `${listText}\n\n` +
+    `לצפייה בטבלה המלאה ב-Google Sheets:\n${SpreadsheetApp.getActiveSpreadsheet().getUrl()}`;
+
+  MailApp.sendEmail({
+    to: TEACHER_EMAIL,
+    subject: `💡 רשימת המילים החדשות של תלמידי בית ספר הראל (${rows.length} הגשות)`,
+    body,
+  });
 }
 
 // שולח אלייך מייל יומי אוטומטי עם מצב התחרות היום ובסיכום השבועי!
@@ -180,7 +251,7 @@ function sendDailyEmailToTeacher() {
     `שלום! הנה סיכום הניקוד האוטומטי של שבוע השפה העברית לתאריך ${todayIso}:\n\n` +
     `📌 דירוג היום:\n${formatList(todayMap)}\n\n` +
     `🏆 טבלה מצטברת לשבוע:\n${formatList(weeklyMap)}\n\n` +
-    `לצפייה בגיליון המלא (כולל לשונית חסימת כפילויות): ${SpreadsheetApp.getActiveSpreadsheet().getUrl()}`;
+    `לצפייה בגיליון המלא (כולל לשונית המילים החדשות): ${SpreadsheetApp.getActiveSpreadsheet().getUrl()}`;
 
   MailApp.sendEmail({
     to: TEACHER_EMAIL,

@@ -2459,6 +2459,30 @@ async function handleInventWordSubmit(event) {
     }
   }
 
+  // שליחה אוטומטית גם לטבלת Google Sheets (לצפייה נוחה ולשליחת מייל מרוכז למורה!)
+  if (hasSheetsConfigured() && !state.teacherMode) {
+    try {
+      await fetch(CONFIG.googleSheetWebhookUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          type: 'inventedWord',
+          dateIso: new Date().toISOString().slice(0, 10),
+          timeStr: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }),
+          className: entry.className,
+          studentName: entry.studentName,
+          word: entry.word,
+          meaning: entry.meaning,
+          example: entry.example,
+          deviceId: state.deviceId,
+        }),
+      });
+    } catch {
+      // התעלמות שקטה במקרה של ניתוק רגעי
+    }
+  }
+
   state.inventedWord = entry;
   saveLocalState();
   renderInventWordSection();
