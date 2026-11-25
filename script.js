@@ -2011,7 +2011,7 @@ function openRiddleModal(riddleId) {
   }
 
   renderDailyStory(riddle);
-  setRiddleModalTab('riddle');
+  setRiddleModalTab('story');
 
   modal.hidden = false;
   document.body.style.overflow = 'hidden';

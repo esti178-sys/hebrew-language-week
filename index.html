@@ -700,32 +700,32 @@
         </button>
       </div>
 
-      <!-- לשוניות חלון היום: חידת היום + דקה של עברית -->
+      <!-- לשוניות חלון היום: דקה של עברית (מימין) + חידת היום (משמאל) -->
       <div class="modal-tabs" role="tablist" aria-label="תוכן היום">
         <button
           type="button"
           role="tab"
-          id="modal-tab-riddle"
+          id="modal-tab-story"
           class="modal-tab is-active"
           aria-selected="true"
-          aria-controls="modal-panel-riddle"
-        >
-          🧩 חידת היום
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="modal-tab-story"
-          class="modal-tab"
-          aria-selected="false"
           aria-controls="modal-panel-story"
         >
           📖 דקה של עברית
         </button>
+        <button
+          type="button"
+          role="tab"
+          id="modal-tab-riddle"
+          class="modal-tab"
+          aria-selected="false"
+          aria-controls="modal-panel-riddle"
+        >
+          🧩 חידת היום
+        </button>
       </div>
 
       <div class="modal-dialog__body">
-        <div id="modal-panel-riddle" role="tabpanel" aria-labelledby="modal-tab-riddle">
+        <div id="modal-panel-riddle" role="tabpanel" aria-labelledby="modal-tab-riddle" hidden>
           <!-- תזכורת למילוי שם וכיתה אם עדיין לא מולאו -->
           <div class="modal-class-prompt" id="modal-class-prompt" hidden>
             <span class="modal-class-prompt__label">🏫 לפני צבירת הנקודות — מלאו שם מלא ובחרו כיתה (כדי שכל תלמיד/ה ייספרו פעם אחת):</span>
@@ -765,13 +765,13 @@
             </div>
             <p class="did-you-know__text" id="modal-dyk-text"></p>
             <button type="button" class="dyk-story-cta" id="modal-go-story-btn">
-              📖 רוצים להעשיר את הידע? קראו את "דקה של עברית" של היום ←
+              → 📖 חזרה לקריאת "דקה של עברית" של היום
             </button>
           </div>
         </div>
 
         <!-- לשונית "דקה של עברית" — קטע מידע מרתק ליום זה -->
-        <div id="modal-panel-story" class="story-panel" role="tabpanel" aria-labelledby="modal-tab-story" hidden>
+        <div id="modal-panel-story" class="story-panel" role="tabpanel" aria-labelledby="modal-tab-story">
           <div class="story-card">
             <div class="story-card__meta">
               <span class="story-card__kicker" id="story-kicker">📖 דקה של עברית · קריאה של 30 שניות</span>
