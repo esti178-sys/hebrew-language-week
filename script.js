@@ -76,7 +76,7 @@ const CONFIG = {
       badgeName: 'מחדש/ת מילים',
       category: 'חידת תמונה',
       shortDesc: 'איך קוראת האקדמיה ללשון העברית לפיג\'מה?',
-      question: 'לפני שהולכים לישון לובשים פיג\'מה נוחה. איך קוראת האקדמיה ללשון העברית לפיג\'מה?',
+      question: 'איך קוראת האקדמיה ללשון העברית לפיג\'מה?',
       svgIllustration: `
         <svg viewBox="0 0 360 185" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="איור של דמות בפיג'מת פסים וכובע שינה עם סימני Zzz">
           <!-- רקע לילה עדין -->
@@ -141,62 +141,37 @@ const CONFIG = {
       badgeName: 'שומר/ת הסוד',
       category: 'עברית של מסכים',
       shortDesc: 'איך אומרים בעברית תקנית "ספוילר" של סדרה או סרט?',
-      question: 'החבר בסרטון כמעט גילה איך נגמרת הסדרה! איך אומרים בעברית תקנית "ספוילר"?',
+      question: 'תמיד יהיה החבר הזה שיעשה לך ספוילר! איך אומרים בעברית תקנית "ספוילר"?',
       svgIllustration: `
-        <svg viewBox="0 0 360 185" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="מסך קולנוע מואר ולידו דמות ששמה יד על הפה בהפתעה">
+        <svg viewBox="0 0 360 185" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="מסך טלוויזיה וקולנוע מואר">
           <rect x="14" y="10" width="332" height="165" rx="22" fill="#EEF6FF" />
 
-          <!-- מסך טלוויזיה / קולנוע מואר (שמאל) -->
-          <g transform="translate(34, 34)">
+          <!-- נצנוצים עדינים ברקע -->
+          <circle cx="56" cy="52" r="4" fill="#38BDF8" opacity="0.5" />
+          <circle cx="304" cy="48" r="4.5" fill="#F5C443" opacity="0.7" />
+          <circle cx="312" cy="128" r="3" fill="#0EA5E9" opacity="0.45" />
+          <circle cx="48" cy="130" r="3" fill="#F5C443" opacity="0.6" />
+
+          <!-- מסך טלוויזיה / קולנוע מואר במרכז -->
+          <g transform="translate(86, 26)">
             <!-- הילה מוארת מאחורי המסך -->
-            <rect x="-4" y="-4" width="152" height="98" rx="18" fill="#38BDF8" opacity="0.22" class="svg-screen-glow" />
+            <rect x="-6" y="-6" width="200" height="122" rx="22" fill="#38BDF8" opacity="0.22" class="svg-screen-glow" />
             <!-- גוף המסך -->
-            <rect x="0" y="0" width="144" height="90" rx="14" fill="#0E2A47" />
-            <rect x="8" y="8" width="128" height="74" rx="8" fill="#0284C7" class="svg-screen-glow" />
-            <!-- סצנת סיום דרמטית על המסך -->
-            <polygon points="72,20 77,33 91,33 80,41 84,54 72,46 60,54 64,41 53,33 67,33" fill="#F5C443" />
-            <rect x="20" y="64" width="104" height="6" rx="3" fill="rgba(255,255,255,0.3)" />
-            <rect x="20" y="64" width="92" height="6" rx="3" fill="#F5C443" />
-            <circle cx="112" cy="67" r="4.5" fill="#FFFFFF" />
+            <rect x="0" y="0" width="188" height="110" rx="16" fill="#0E2A47" />
+            <rect x="10" y="10" width="168" height="90" rx="10" fill="#0284C7" class="svg-screen-glow" />
+            <!-- סצנת סיום דרמטית על המסך + סמל ניגון -->
+            <circle cx="94" cy="46" r="22" fill="rgba(14, 42, 71, 0.32)" />
+            <polygon points="88,35 88,57 107,46" fill="#F5C443" />
+            <!-- כוכבי דרמה עדינים בפינות המסך -->
+            <polygon points="34,26 36,31 41,32 36,34 34,39 32,34 27,32 32,31" fill="#FEF08A" />
+            <polygon points="154,28 156,33 161,34 156,36 154,41 152,36 147,34 152,33" fill="#FEF08A" />
+            <!-- פס התקדמות לקראת סוף הפרק -->
+            <rect x="24" y="80" width="140" height="7" rx="3.5" fill="rgba(255,255,255,0.3)" />
+            <rect x="24" y="80" width="124" height="7" rx="3.5" fill="#F5C443" />
+            <circle cx="148" cy="83.5" r="5" fill="#FFFFFF" />
             <!-- מעמד הטלוויזיה -->
-            <rect x="62" y="90" width="20" height="14" fill="#17416C" />
-            <rect x="44" y="103" width="56" height="8" rx="4" fill="#0E2A47" />
-          </g>
-
-          <!-- דמות מופתעת ששמה יד על הפה (ימין) -->
-          <g transform="translate(215, 24)">
-            <!-- קווי הפתעה מרחפים -->
-            <g class="svg-pop-rays" stroke="#E2A81D" stroke-width="3" stroke-linecap="round">
-              <line x1="12" y1="18" x2="2" y2="10" />
-              <line x1="25" y1="8" x2="22" y2="-2" />
-              <line x1="92" y1="12" x2="102" y2="4" />
-            </g>
-
-            <!-- חולצה -->
-            <path d="M16 148 C16 106 32 94 56 94 C80 94 96 106 96 148 Z" fill="#0EA5E9" stroke="#0E2A47" stroke-width="2.5" />
-            <path d="M40 96 L56 112 L72 96" fill="#FFFFFF" />
-
-            <!-- שיער וראש -->
-            <circle cx="56" cy="60" r="30" fill="#FDE4C8" stroke="#0E2A47" stroke-width="2.5" />
-            <path d="M26 56 C26 30 44 22 60 24 C78 24 88 38 86 55 C76 42 64 38 48 40 C38 41 31 47 26 56 Z" fill="#0E2A47" />
-
-            <!-- עיניים פעורות וגבות מופתעות -->
-            <path d="M38 48 Q45 43 51 47" stroke="#0E2A47" stroke-width="2.4" stroke-linecap="round" fill="none" />
-            <path d="M61 47 Q67 43 74 48" stroke="#0E2A47" stroke-width="2.4" stroke-linecap="round" fill="none" />
-            <circle cx="45" cy="58" r="5.5" fill="#FFFFFF" stroke="#0E2A47" stroke-width="2" />
-            <circle cx="67" cy="58" r="5.5" fill="#FFFFFF" stroke="#0E2A47" stroke-width="2" />
-            <circle cx="44" cy="58" r="2.4" fill="#0E2A47" />
-            <circle cx="66" cy="58" r="2.4" fill="#0E2A47" />
-
-            <!-- יד מונפשת מכסה את הפה בהפתעה -->
-            <g class="svg-gasp-hand">
-              <path d="M32 115 Q36 90 48 80" stroke="#0E2A47" stroke-width="11" stroke-linecap="round" />
-              <path d="M32 115 Q36 90 48 80" stroke="#FDE4C8" stroke-width="6.5" stroke-linecap="round" />
-              <ellipse cx="56" cy="77" rx="13" ry="10.5" fill="#FDE4C8" stroke="#0E2A47" stroke-width="2.4" />
-              <line x1="51" y1="71" x2="51" y2="79" stroke="#0E2A47" stroke-width="1.6" stroke-linecap="round" />
-              <line x1="56" y1="69" x2="56" y2="79" stroke="#0E2A47" stroke-width="1.6" stroke-linecap="round" />
-              <line x1="61" y1="71" x2="61" y2="79" stroke="#0E2A47" stroke-width="1.6" stroke-linecap="round" />
-            </g>
+            <rect x="82" y="110" width="24" height="16" fill="#17416C" />
+            <rect x="58" y="124" width="72" height="9" rx="4.5" fill="#0E2A47" />
           </g>
         </svg>
       `,
