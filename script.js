@@ -2045,7 +2045,9 @@ function renderDailyStory(riddle) {
   if (discussionEl) discussionEl.textContent = story.discussion;
   if (backBtn) {
     const isSolved = Boolean(state.solvedMeta[riddle.id]);
-    backBtn.textContent = isSolved ? '🧩 חזרה לפתרון החידה' : '🧩 מעבר לחידת היום';
+    backBtn.textContent = isSolved
+      ? '🧩 חזרה לפתרון החידה ←'
+      : '🧩 סיימתם לקרוא? לחצו כאן למעבר לחידת היום ←';
   }
 }
 
@@ -2073,7 +2075,9 @@ function setRiddleModalTab(tab) {
     const backBtn = document.getElementById('story-back-riddle-btn');
     if (backBtn) {
       const isSolved = Boolean(state.solvedMeta[state.activeRiddleId]);
-      backBtn.textContent = isSolved ? '🧩 חזרה לפתרון החידה' : '🧩 מעבר לחידת היום';
+      backBtn.textContent = isSolved
+        ? '🧩 חזרה לפתרון החידה ←'
+        : '🧩 סיימתם לקרוא? לחצו כאן למעבר לחידת היום ←';
     }
   }
 }
