@@ -446,9 +446,10 @@ const CONFIG = {
   // --- 9. כרטיסיות "מילת היום" המתהפכות (חידושי האקדמיה ללשון העברית) ---
   wordsOfTheDay: [
     {
-      word: 'הֶסְכֵּת',
-      meaning: 'פודקאסט',
-      example: 'מהשורש ס-כ-ת (להקשיב קשב רב). לדוגמה: "האזנתי בדרך לבית הספר להֶסְכֵּת מרתק על חלל!"',
+      word: 'קִשּׁוּרִית',
+      meaning: 'קישור באינטרנט (Link)',
+      example:
+        'מילה עברית חביבה מהמילה "קֶשֶׁר" בסיומת הקטנה "-ִית". לדוגמה: "שלחתי לקבוצת הכיתה קִשּׁוּרִית לאתר שבוע השפה העברית!"',
     },
     {
       word: 'יִשּׂוּמוֹן',
@@ -1638,6 +1639,53 @@ function renderRoadmap() {
   });
 
   grid.appendChild(peakCard);
+  renderHeroTodayButton();
+}
+
+function getTargetTodayRiddle() {
+  // 1. אם היום הוא אחד מ-6 ימי התחרות ופתוח — מחזירים אותו
+  for (let i = 0; i < CONFIG.riddles.length; i += 1) {
+    if (isDayToday(i) && isDayUnlocked(i)) {
+      return CONFIG.riddles[i];
+    }
+  }
+  // 2. אחרת, מחפשים את האתגר הפתוח שעדיין לא נפתר (האחרון שנפתח)
+  const unlocked = CONFIG.riddles.filter((_, i) => isDayUnlocked(i));
+  if (!unlocked.length) return null;
+  const unsolved = unlocked.filter((r) => !state.solvedMeta[r.id]);
+  if (unsolved.length) return state.teacherMode ? unsolved[0] : unsolved[unsolved.length - 1];
+  return unlocked[unlocked.length - 1];
+}
+
+function renderHeroTodayButton() {
+  const btn = document.getElementById('hero-today-challenge-btn');
+  if (!btn) return;
+
+  const target = getTargetTodayRiddle();
+  if (!target) {
+    const firstDate = formatShortHebrewDate(CONFIG.dayDates[0]);
+    btn.classList.add('hero-today-btn--upcoming');
+    btn.textContent = `🗓️ האתגר הראשון ייפתח ב-${firstDate} · למפת המסע ↓`;
+    return;
+  }
+
+  btn.classList.remove('hero-today-btn--upcoming');
+  const isSolved = Boolean(state.solvedMeta[target.id]);
+  btn.textContent = isSolved
+    ? `✅ אתגר ${target.dayLabel} הושלם — לפתיחה מחדש ←`
+    : `🚀 ישר לאתגר של היום (${target.dayLabel}) ←`;
+}
+
+function handleHeroTodayClick() {
+  const target = getTargetTodayRiddle();
+  if (!target) {
+    const firstDate = formatShortHebrewDate(CONFIG.dayDates[0]);
+    const roadmap = document.getElementById('roadmap-section');
+    if (roadmap) roadmap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showToast(`האתגר הראשון ייפתח אוטומטית בתאריך ${firstDate} — בינתיים בחרו כיתה והתכוננו! ⏳`);
+    return;
+  }
+  openRiddleModal(target.id);
 }
 
 // --- מדף תגי ההישגים (מדבקות) ---
@@ -3252,6 +3300,12 @@ function bindEvents() {
       const setupFields = document.getElementById('student-setup-fields');
       if (setupFields) setupFields.hidden = !setupFields.hidden;
     });
+  }
+
+  // כפתור קיצור מהיר לאתגר של היום
+  const heroTodayBtn = document.getElementById('hero-today-challenge-btn');
+  if (heroTodayBtn) {
+    heroTodayBtn.addEventListener('click', handleHeroTodayClick);
   }
 
   // מודאל חידה ורמז + לשונית "דקה של עברית"

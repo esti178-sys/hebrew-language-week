@@ -3,11 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>שבוע השפה העברית | בית ספר הראל (כיתות ה'–ח')</title>
+  <title>שבוע השפה העברית | בית ספר הראל לוד (כיתות ה'–ח')</title>
   <meta
     name="description"
-    content="אפליקציית שבוע השפה העברית בבית הספר לכיתות ה'–ח': מפת מסע ל-7 ימים, תחרות ניקוד בין הכיתות, חידות יומיות עם רמזים ותגי הישגים, מילת היום, יום השיא ומחולל תעודת אלוף/ת העברית."
+    content="6 ימים של דקה של עברית, חידות יומיות, תחרות ניקוד חיה בין 20 הכיתות, יום שיא חגיגי ומחולל תעודה אישית — בית ספר הראל לוד."
   />
+
+  <!-- תצוגה מקדימה עשירה לשיתוף בוואטסאפ וברשתות (Open Graph) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="he_IL" />
+  <meta property="og:site_name" content='בית ספר הראל לוד · שבוע השפה העברית' />
+  <meta property="og:url" content="https://esti178-sys.github.io/hebrew-language-week/" />
+  <meta property="og:title" content="שבוע השפה העברית | בית ספר הראל לוד 🏆" />
+  <meta
+    property="og:description"
+    content='6 ימים של "דקה של עברית", חידות יומיות ואליפות 20 הכיתות! בחרו כיתה, הכניסו שם והתחילו לצבור נקודות.'
+  />
+  <meta property="og:image" content="https://esti178-sys.github.io/hebrew-language-week/og-preview.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="שבוע השפה העברית | בית ספר הראל לוד 🏆" />
+  <meta
+    name="twitter:description"
+    content='6 ימים של "דקה של עברית", חידות יומיות ואליפות 20 הכיתות — בחרו כיתה וצברו נקודות!'
+  />
+  <meta name="twitter:image" content="https://esti178-sys.github.io/hebrew-language-week/og-preview.png" />
+
   <link
     rel="icon"
     type="image/svg+xml"
@@ -22,7 +45,7 @@
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="style.css?v=20261125e" />
+  <link rel="stylesheet" href="style.css?v=20261125f" />
 </head>
 <body>
   <!-- קנבס קונפטי לחגיגת פתרון נכון -->
@@ -225,6 +248,11 @@
           </div>
         </div>
 
+        <!-- כפתור קיצור מהיר ישירות לאתגר של היום (נוח במיוחד בנייד) -->
+        <button type="button" id="hero-today-challenge-btn" class="hero-today-btn">
+          🚀 ישר לאתגר של היום ←
+        </button>
+
         <!-- מד התקדמות אישי -->
         <div class="progress-summary" aria-label="התקדמות אישית בחידות">
           <div class="progress-summary__top">
@@ -343,12 +371,12 @@
             <div class="flip-card__inner">
               <div class="flip-card__face flip-card__front">
                 <span class="flip-card__tag">מנחשים מה זה?</span>
-                <span class="flip-card__word" id="word-front-text">הֶסְכֵּת</span>
+                <span class="flip-card__word" id="word-front-text">קִשּׁוּרִית</span>
                 <span class="flip-card__cta">👆 לחצו כדי להפוך את הכרטיסייה</span>
               </div>
               <div class="flip-card__face flip-card__back">
                 <span class="flip-card__tag flip-card__tag--back">המשמעות המפתיעה:</span>
-                <strong class="flip-card__meaning" id="word-back-meaning">פודקאסט</strong>
+                <strong class="flip-card__meaning" id="word-back-meaning">קישור באינטרנט (Link)</strong>
                 <p class="flip-card__example" id="word-back-example"></p>
                 <span class="flip-card__cta flip-card__cta--back">לחצו שוב לחזרה</span>
               </div>
@@ -939,6 +967,6 @@
   <!-- הודעת טוסט עדינה למשובים מהירים -->
   <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
 
-  <script src="script.js?v=20261125d"></script>
+  <script src="script.js?v=20261125f"></script>
 </body>
 </html>
